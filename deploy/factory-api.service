@@ -1,7 +1,8 @@
 # systemd unit for the FastAPI backend (analytics API).
 # Install: sudo cp deploy/factory-api.service /etc/systemd/system/
 #          sudo systemctl daemon-reload && sudo systemctl enable --now factory-api
-# Adjust User, WorkingDirectory, and the venv path to your VPS.
+# Hetzner VPS layout: /home/scott/manufacturing-intelligence-platform.
+# Ports 8000/8001/8787 are already used by other portfolio apps; API uses 8002.
 
 [Unit]
 Description=Manufacturing Intelligence API (FastAPI)
@@ -9,12 +10,13 @@ After=network.target postgresql.service
 
 [Service]
 Type=simple
-User=deploy
-WorkingDirectory=/opt/manufacturing-intelligence-platform/backend
+User=scott
+Group=scott
+WorkingDirectory=/home/scott/manufacturing-intelligence-platform/backend
 Environment="DATABASE_URL=postgresql://factory:CHANGEME@localhost:5432/manufacturing"
-Environment="CORS_ORIGINS=https://factory.scottcampbell.io"
+Environment="CORS_ORIGINS=https://factory.scottcampbell.io,http://localhost:3000"
 # Use a venv created with: python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-ExecStart=/opt/manufacturing-intelligence-platform/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 2
+ExecStart=/home/scott/manufacturing-intelligence-platform/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8002 --workers 2
 Restart=on-failure
 RestartSec=3
 
