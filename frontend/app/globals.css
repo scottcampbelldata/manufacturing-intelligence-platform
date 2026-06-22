@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background: radial-gradient(1200px 600px at 70% -10%, #1b2540 0%, #0f1729 55%);
+  color: #e6ecf7;
+  min-height: 100vh;
+}
+
+.card {
+  @apply bg-panel border border-edge rounded-xl p-5;
+}
+
+.kpi-value {
+  @apply text-3xl font-semibold text-white;
+}
+
+.kpi-label {
+  @apply text-xs uppercase tracking-wider text-mute mt-1;
+}
+
+.section-title {
+  @apply text-lg font-semibold text-white;
+}
+
+.section-sub {
+  @apply text-sm text-mute mt-1;
+}

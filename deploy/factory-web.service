@@ -1,0 +1,24 @@
+# systemd unit for the Next.js frontend.
+# Install: sudo cp deploy/factory-web.service /etc/systemd/system/
+#          sudo systemctl daemon-reload && sudo systemctl enable --now factory-web
+# Build first:  cd frontend && npm ci && npm run build
+
+[Unit]
+Description=Manufacturing Intelligence Dashboard (Next.js)
+After=network.target factory-api.service
+
+[Service]
+Type=simple
+User=deploy
+WorkingDirectory=/opt/manufacturing-intelligence-platform/frontend
+Environment="NODE_ENV=production"
+Environment="PORT=3000"
+# Same-origin: leave API base empty so the browser calls /api/* and nginx
+# proxies it to the backend. (Set a full URL only if API is on another host.)
+Environment="NEXT_PUBLIC_API_BASE="
+ExecStart=/usr/bin/npm run start
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
