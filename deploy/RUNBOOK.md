@@ -6,6 +6,63 @@ should call `https://factory-api.scottcampbell.io`.
 Assumes the VPS has PostgreSQL 17, Python 3.14+, nginx, and systemd. Replace the
 DB password before installing the service.
 
+## Production Deployment Flow
+
+```text
+GitHub push
+    |
+    v
+Cloudflare Pages builds the frontend from frontend/
+    |
+    v
+VPS pulls API code from GitHub
+    |
+    v
+PostgreSQL reload or migration
+    |
+    v
+systemd restarts FastAPI
+    |
+    v
+nginx serves factory-api.scottcampbell.io
+```
+
+## Server Layout
+
+```text
+/home/scott/manufacturing-intelligence-platform/   application repo
+/home/scott/manufacturing-intelligence-platform/backend/.venv/
+/etc/systemd/system/factory-api.service
+/etc/nginx/sites-available/factory-api.scottcampbell.io.conf
+/etc/nginx/sites-enabled/factory-api.scottcampbell.io.conf
+PostgreSQL database: manufacturing
+PostgreSQL role: factory
+API bind: 127.0.0.1:8002
+Public API: https://factory-api.scottcampbell.io
+Frontend: https://factory.scottcampbell.io
+```
+
+## Environment Variables
+
+The API service reads:
+
+```text
+/home/scott/manufacturing-intelligence-platform/backend/.env
+```
+
+Required values:
+
+```bash
+DATABASE_URL=postgresql://factory:CHANGEME@localhost:5432/manufacturing
+CORS_ORIGINS=https://factory.scottcampbell.io,https://manufacturing-intelligence-platform.pages.dev,http://localhost:3000
+```
+
+Cloudflare Pages should set:
+
+```text
+NEXT_PUBLIC_API_BASE=https://factory-api.scottcampbell.io
+```
+
 ## 0. Get The Code Onto The VPS
 
 ```bash
@@ -89,15 +146,100 @@ Verify:
 
 ```bash
 curl https://factory-api.scottcampbell.io/health
+curl https://factory-api.scottcampbell.io/api/system
 curl https://factory-api.scottcampbell.io/api/kpi
+curl https://factory-api.scottcampbell.io/api/methodology/validation
 ```
 
 ## Updating
 
 ```bash
 cd /home/scott/manufacturing-intelligence-platform
-git pull
+git pull --ff-only
 sudo systemctl restart factory-api
+```
+
+## Database Backup
+
+Before a destructive reload:
+
+```bash
+mkdir -p /home/scott/backups/manufacturing
+pg_dump "$DATABASE_URL" \
+  --format=custom \
+  --file="/home/scott/backups/manufacturing/manufacturing-$(date +%Y%m%d-%H%M%S).dump"
+```
+
+List backups:
+
+```bash
+ls -lh /home/scott/backups/manufacturing
+```
+
+## Data Reload Process
+
+Use this when the synthetic generator, schema, or analytical views change:
+
+```bash
+cd /home/scott/manufacturing-intelligence-platform
+git pull --ff-only
+
+set -a
+source backend/.env
+set +a
+
+cd generator
+../backend/.venv/bin/python generate_factory_data.py
+
+cd ..
+psql "$DATABASE_URL" -f db/schema.sql
+backend/.venv/bin/python db/load_data.py
+psql "$DATABASE_URL" -f db/analytical_views.sql
+
+sudo systemctl restart factory-api
+```
+
+Post-reload checks:
+
+```bash
+curl https://factory-api.scottcampbell.io/health
+curl https://factory-api.scottcampbell.io/api/system
+curl https://factory-api.scottcampbell.io/api/methodology/validation
+```
+
+## Rollback Process
+
+Rollback code only:
+
+```bash
+cd /home/scott/manufacturing-intelligence-platform
+git log --oneline -5
+git checkout <known-good-commit>
+sudo systemctl restart factory-api
+```
+
+Rollback database from a backup:
+
+```bash
+createdb manufacturing_restore_test
+pg_restore --dbname=manufacturing_restore_test /home/scott/backups/manufacturing/<backup>.dump
+
+# After validating the restore target, replace the live DB in a maintenance window.
+sudo -u postgres dropdb manufacturing
+sudo -u postgres createdb -O factory manufacturing
+pg_restore --dbname="$DATABASE_URL" /home/scott/backups/manufacturing/<backup>.dump
+sudo systemctl restart factory-api
+```
+
+## Cloudflare Pages Settings
+
+```text
+Repository: scottcampbelldata/manufacturing-intelligence-platform
+Root directory: frontend
+Build command: npm run build
+Build output directory: out
+Environment variable:
+  NEXT_PUBLIC_API_BASE=https://factory-api.scottcampbell.io
 ```
 
 ## Troubleshooting

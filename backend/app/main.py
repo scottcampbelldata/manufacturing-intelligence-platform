@@ -44,8 +44,7 @@ app.include_router(trends.router)
 app.include_router(methodology.router)
 
 
-@app.get("/health")
-async def health():
+async def system_payload():
     row = await db.fetch_one(
         """
         SELECT
@@ -59,7 +58,27 @@ async def health():
     )
     return {
         "status": "ok",
+        "service": "factory-api",
         "database": "connected",
+        "schema_version": "2026.06.01",
+        "dataset_seed": 1970,
         "db": True,
-        **(row or {}),
+        "date_min": row["date_min"] if row else None,
+        "date_max": row["date_max"] if row else None,
+        "tables": {
+            "dim_asset": row["asset_rows"] if row else None,
+            "fact_fault_events": row["fault_event_rows"] if row else None,
+            "fact_defect_events": row["defect_event_rows"] if row else None,
+            "fact_production": row["production_rows"] if row else None,
+        },
     }
+
+
+@app.get("/health")
+async def health():
+    return await system_payload()
+
+
+@app.get("/api/system")
+async def system():
+    return await system_payload()

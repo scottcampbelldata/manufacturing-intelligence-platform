@@ -8,6 +8,34 @@ This project combines a domain-realistic synthetic dataset, a PostgreSQL star sc
 
 * Live report: https://factory.scottcampbell.io
 * Live API: https://factory-api.scottcampbell.io
+* API docs: https://factory-api.scottcampbell.io/docs
+
+## Screenshots
+
+### Executive report
+
+![Executive report](docs/screenshots/executive-report.png)
+
+### System proof
+
+![System proof](docs/screenshots/system-proof.png)
+
+### Methodology and validation
+
+![Methodology and validation](docs/screenshots/methodology-validation.png)
+
+## Reviewer path
+
+If you are reviewing this project quickly:
+
+1. Open the live dashboard: https://factory.scottcampbell.io
+2. Check the System Proof section.
+3. Open the API health endpoint: https://factory-api.scottcampbell.io/health
+4. Open the system endpoint: https://factory-api.scottcampbell.io/api/system
+5. Review `db/schema.sql` and `db/analytical_views.sql`.
+6. Review `generator/generate_factory_data.py`.
+7. Review `docs/schema.md`.
+8. Review `deploy/RUNBOOK.md`.
 
 ## What it shows
 
@@ -35,6 +63,20 @@ These events are not manually labeled in the trend chart. They are validated aga
 The platform separates aging equipment effects, replacement resets, seasonal severity, fault type, crew variance, and station-level production impact.
 
 ## Architecture
+
+```mermaid
+flowchart TD
+    A[Seeded synthetic Python generator] --> B[CSV fact and dimension extracts]
+    B --> C[PostgreSQL star schema]
+    C --> D[Analytical SQL views]
+    D --> E[Python validation checks]
+    D --> F[FastAPI JSON endpoints]
+    F --> G[Cloudflare-hosted Next.js analytics report]
+    H[GitHub push] --> I[Cloudflare Pages frontend build]
+    H --> J[VPS pulls API code]
+    J --> K[systemd restarts FastAPI]
+    K --> L[nginx serves factory-api.scottcampbell.io]
+```
 
 ```text
 Seeded synthetic generator
@@ -69,6 +111,9 @@ db/          Star schema, analytical views, and COPY loader
 backend/     FastAPI service that exposes SQL views as JSON
 frontend/    Next.js and Recharts analytics report
 deploy/      systemd unit, nginx config, VPS runbook, and DB reset helper
+docs/        screenshots, schema documentation, and reviewer-oriented proof
+tests/       pytest validation suite for generator, database, and API contracts
+.github/     CI workflow that runs tests against PostgreSQL and builds frontend
 ```
 
 ## System proof
@@ -155,15 +200,42 @@ Full VPS deployment with systemd, nginx, and TLS is documented in:
 deploy/RUNBOOK.md
 ```
 
+Schema documentation:
+
+```text
+docs/schema.md
+```
+
 ## API endpoints
 
 ### Health and methodology
 
 ```text
 GET /health
+GET /api/system
 GET /api/methodology
 GET /api/methodology/validation
 GET /api/methodology/provenance
+```
+
+Example system response:
+
+```json
+{
+  "status": "ok",
+  "service": "factory-api",
+  "database": "connected",
+  "schema_version": "2026.06.01",
+  "dataset_seed": 1970,
+  "date_min": "2023-01-01",
+  "date_max": "2026-01-01",
+  "tables": {
+    "dim_asset": 157,
+    "fact_fault_events": 8040,
+    "fact_defect_events": 726793,
+    "fact_production": 78912
+  }
+}
 ```
 
 ### Executive analytics
@@ -204,6 +276,40 @@ Example:
 
 ```bash
 curl https://factory-api.scottcampbell.io/api/methodology/validation
+```
+
+## Automated tests and CI
+
+The repository includes a pytest suite under `tests/`:
+
+```text
+tests/test_generator_reproducibility.py
+tests/test_row_counts.py
+tests/test_foreign_keys.py
+tests/test_api_contracts.py
+tests/test_validation_endpoint.py
+```
+
+The tests regenerate the synthetic dataset, load PostgreSQL, apply analytical
+views, and verify:
+
+* deterministic row counts from the seeded generator
+* no orphan asset IDs
+* no orphan shift links
+* no negative production values or invalid yield values
+* expected API JSON keys
+* `/api/methodology/validation` reports PASS for integrity checks
+* `/docs` and `/openapi.json` are available
+
+GitHub Actions runs backend tests against PostgreSQL and builds the Cloudflare
+frontend on every push and pull request.
+
+Run locally:
+
+```bash
+pip install -r backend/requirements.txt pytest psycopg2-binary numpy pandas httpx
+export DATABASE_URL=postgresql://localhost:5432/manufacturing
+pytest -q
 ```
 
 ## Deployment model
