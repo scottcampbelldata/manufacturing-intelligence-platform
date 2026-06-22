@@ -1,10 +1,10 @@
 "use client";
+
 import { StationLoss, ReplaceCandidate, ValidationCheck, Provenance } from "@/lib/api";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "https://factory-api.scottcampbell.io";
 const REPO_BASE = "https://github.com/scottcampbelldata/manufacturing-intelligence-platform";
 
-/* "What this means / what to do" callout under each section. */
 export function Takeaway({ children }: { children: React.ReactNode }) {
   return (
     <div className="mt-4 flex gap-3 rounded-lg border border-edge bg-[var(--panel-2)] p-3">
@@ -18,6 +18,7 @@ export function Takeaway({ children }: { children: React.ReactNode }) {
 
 export function LossByStation({ data }: { data: StationLoss[] }) {
   const max = Math.max(...data.map((d) => d.loss_index), 1);
+
   return (
     <div className="space-y-3">
       {data.map((d, i) => (
@@ -28,7 +29,7 @@ export function LossByStation({ data }: { data: StationLoss[] }) {
               {d.station_name}
             </span>
             <span className="text-mute">
-              {d.downtime_hrs.toLocaleString()} hrs down · {d.scrap_units.toLocaleString()} scrap
+              {d.downtime_hrs.toLocaleString()} hrs down - {d.scrap_units.toLocaleString()} scrap
             </span>
           </div>
           <div className="h-2.5 rounded-full bg-edge overflow-hidden flex">
@@ -74,7 +75,7 @@ export function ReplaceCandidates({ data }: { data: ReplaceCandidate[] }) {
             <th className="py-1">Robot</th>
             <th>Station</th>
             <th className="text-right">Faults</th>
-            <th className="text-right">'24 → '25</th>
+            <th className="text-right">2024 - 2025</th>
             <th className="text-right">Avg repair</th>
             <th className="text-right">Trend</th>
           </tr>
@@ -86,7 +87,7 @@ export function ReplaceCandidates({ data }: { data: ReplaceCandidate[] }) {
               <td>{r.station}</td>
               <td className="text-right">{r.total_faults}</td>
               <td className="text-right text-mute">
-                {r.faults_prior} → {r.faults_recent}
+                {r.faults_prior} - {r.faults_recent}
               </td>
               <td className="text-right">{r.avg_repair_min}m</td>
               <td className="text-right">
@@ -134,7 +135,7 @@ export function MethodologyPanel({
                   {c.status === "fail" && (
                     <span className="text-accent text-xs font-semibold">FAIL</span>
                   )}
-                  {c.status === "info" && <span className="text-faint text-xs">—</span>}
+                  {c.status === "info" && <span className="text-faint text-xs">-</span>}
                 </td>
               </tr>
             ))}
@@ -149,13 +150,13 @@ export function MethodologyPanel({
         <ul className="text-sm text-mute space-y-1.5 mb-3">
           {provenance.modeling.map((m, i) => (
             <li key={i} className="flex gap-2">
-              <span className="text-accent">·</span>
+              <span className="text-accent">-</span>
               {m}
             </li>
           ))}
         </ul>
         <p className="text-xs text-faint font-mono">
-          seed = {provenance.seed} · reproducible · no proprietary data
+          seed = {provenance.seed} - reproducible - no proprietary data
         </p>
         <p className="text-xs text-faint mt-2">{provenance.oee_definition}</p>
       </div>
