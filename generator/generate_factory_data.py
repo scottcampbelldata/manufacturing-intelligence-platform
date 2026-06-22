@@ -1,10 +1,10 @@
 """
-Synthetic Manufacturing Telemetry Generator  (3-year, full-fidelity)
-====================================================================
+Synthetic Automotive Assembly Telemetry Generator  (3-year, full-fidelity)
+==========================================================================
 
-Generates a domain-realistic synthetic dataset for a multi-station robotic
-assembly line over a 3-year window. NO proprietary data is used. Every defect
-is emitted as an individual record (no downsampling).
+Generates a domain-realistic synthetic dataset for an AUTOMOTIVE final-assembly
+plant (body -> paint -> trim/chassis -> final inspection) over a 3-year window.
+NO proprietary data is used. Every defect is emitted as an individual record.
 
 What makes this *factory-realistic* rather than a repeated sine wave -- the
 failure and success rates drift year over year the way a real plant's would:
@@ -52,7 +52,7 @@ import math, os
 SEED = 1970
 rng = np.random.default_rng(SEED)
 
-START = datetime(2025, 7, 1, 6, 0, 0)     # 3-year window
+START = datetime(2023, 1, 1, 6, 0, 0)     # 3 full calendar years (2023-2025), all historical
 DAYS = 1095
 END = START + timedelta(days=DAYS)
 
@@ -63,14 +63,14 @@ OUT = "output"
 os.makedirs(OUT, exist_ok=True)
 
 STATIONS = [
-    ("ST01", "Substrate Load"),
-    ("ST02", "Deposition"),
-    ("ST03", "Laser Scribe"),
-    ("ST04", "Lamination"),
-    ("ST05", "Edge Seal / Frame"),
-    ("ST06", "Junction Box"),
-    ("ST07", "Flash Test / QC"),
-    ("ST08", "Packaging"),
+    ("ST01", "Stamping"),
+    ("ST02", "Body Framing"),
+    ("ST03", "Robotic Spot Weld"),
+    ("ST04", "Paint"),
+    ("ST05", "Trim"),
+    ("ST06", "Final Assembly"),
+    ("ST07", "Final Inspection"),     # primary detection point
+    ("ST08", "Roll & Brake Test"),    # final test / detection
 ]
 STATION_IDS = [s[0] for s in STATIONS]
 STATION_NAME = dict(STATIONS)
@@ -91,64 +91,67 @@ WEIBULL = {
 }
 
 FAULT_CATALOG = {
-    "robot": [
-        ("R-SERVO", "Servo overcurrent",        0.22, 45),
-        ("R-ENC",   "Encoder fault",            0.15, 60),
-        ("R-COLL",  "Collision detect stop",    0.10, 30),
-        ("R-PNEU",  "Pneumatic pressure low",   0.18, 25),
-        ("R-VIS",   "Vision calibration drift", 0.12, 50),
-        ("R-ESTOP", "E-stop triggered",         0.08, 20),
-        ("R-TEMP",  "Drive overtemp",           0.15, 40),
+    "robot": [   # weld guns, paint robots, nut runners, handling robots
+        ("R-WELDSTK", "Weld tip stick",          0.20, 35),
+        ("R-DRESS",   "Tip dresser fault",       0.15, 40),
+        ("R-SERVO",   "Servo gun overcurrent",   0.16, 45),
+        ("R-BELL",    "Paint bell cup fault",    0.10, 50),
+        ("R-TORQUE",  "Nut runner torque fault", 0.14, 25),
+        ("R-VIS",     "Vision / gap sensor fault",0.10, 50),
+        ("R-ESTOP",   "Cell e-stop triggered",   0.07, 20),
+        ("R-TEMP",    "Drive overtemp",          0.08, 40),
     ],
-    "conveyor": [
-        ("C-JAM",   "Product jam",              0.34, 15),
-        ("C-BELT",  "Belt tracking error",      0.16, 35),
-        ("C-MOTOR", "Gearmotor fault",          0.12, 70),
-        ("C-PHOTO", "Photo-eye misread",        0.20, 12),
-        ("C-VFD",   "VFD trip",                 0.10, 30),
-        ("C-BEAR",  "Bearing vibration alarm",  0.08, 55),
+    "conveyor": [   # skillets, EMS carriers, AGVs, lifts
+        ("C-SKID",  "Skillet conveyor jam",     0.30, 15),
+        ("C-EMS",   "EMS carrier fault",        0.16, 35),
+        ("C-AGV",   "AGV navigation fault",     0.14, 30),
+        ("C-LIFT",  "Lift / turntable fault",   0.12, 45),
+        ("C-VFD",   "VFD trip",                 0.12, 30),
+        ("C-CHAIN", "Conveyor chain wear",      0.16, 55),
     ],
 }
-THERMAL_CODES = {"R-TEMP", "R-SERVO", "C-MOTOR", "C-VFD"}
-MECHANICAL_CODES = {"R-ENC", "R-PNEU", "C-BELT", "C-BEAR", "R-COLL"}  # PM-reducible
+# Heat-sensitive (paint bells + drives + VFDs): summer thermal load
+THERMAL_CODES = {"R-TEMP", "R-SERVO", "C-VFD", "R-BELL"}
+# PM-addressable mechanical wear: reduced by the reliability program
+MECHANICAL_CODES = {"R-DRESS", "R-TORQUE", "C-CHAIN", "C-LIFT", "C-SKID"}
 
 # --------------------------------------------------------------------------
 # YEAR-OVER-YEAR DYNAMICS  (the heart of "no two years alike")
 # --------------------------------------------------------------------------
 # Severity multiplier applied to the seasonal swing. >1 = harsher season.
-SUMMER_SEVERITY = {2025: 1.25, 2026: 0.75, 2027: 1.55, 2028: 1.05}
+SUMMER_SEVERITY = {2023: 1.25, 2024: 0.75, 2025: 1.55, 2026: 1.05}
 # Winter keyed by the year its January falls in.
-WINTER_SEVERITY = {2026: 0.85, 2027: 1.45, 2028: 0.70}
+WINTER_SEVERITY = {2024: 0.85, 2025: 1.45, 2026: 0.70}
 
 # Acute transient events: (start, end, scope, fault_mult, defect_mult, label)
 #   scope: which fault codes the fault_mult applies to ("thermal","mechanical","all")
 ACUTE_EVENTS = [
-    (date(2027, 7, 10), date(2027, 7, 24), "thermal", 2.0, 1.0,
-     "Heat wave - elevated drive/motor thermal faults"),
-    (date(2027, 1, 8),  date(2027, 1, 18), "mechanical", 1.6, 1.0,
-     "Cold snap - pneumatic/mechanical faults up"),
-    (date(2026, 10, 5), date(2026, 10, 26), "all", 1.0, 2.4,
-     "Supplier bad batch - junction box seal defects (ST06)"),
+    (date(2025, 7, 10), date(2025, 7, 24), "thermal", 2.0, 1.0,
+     "Heat wave - paint booth and drive thermal faults up"),
+    (date(2025, 1, 8),  date(2025, 1, 18), "mechanical", 1.6, 1.0,
+     "Cold snap - material-handling mechanical faults up"),
+    (date(2024, 10, 5), date(2024, 10, 26), "all", 1.0, 2.4,
+     "Supplier bad batch - fastener torque defects (ST06 Final Assembly)"),
 ]
 ACUTE_DEFECT_STATION = {  # which station a defect-spiking acute event hits
-    "Supplier bad batch - junction box seal defects (ST06)": "ST06",
+    "Supplier bad batch - fastener torque defects (ST06 Final Assembly)": "ST06",
 }
 
 # Permanent process changes: (date, station, defect_mult_after, label)
 PROCESS_CHANGES = [
-    (date(2026, 4, 15), "ST03", 0.55, "Laser optics upgrade - scribe defects down"),
-    (date(2027, 9, 1),  "ST02", 0.70, "Deposition chamber retune - coating defects down"),
+    (date(2024, 4, 15), "ST03", 0.55, "Weld cell retooling - spot-weld defects down"),
+    (date(2025, 9, 1),  "ST04", 0.70, "Paint booth upgrade - paint defects down"),
 ]
 
-# New product variant introduction (learning-curve restart on two stations)
-NEW_PRODUCT_DATE = date(2027, 1, 20)
-NEW_PRODUCT_STATIONS = {"ST04", "ST05"}
+# New model-year launch (learning-curve restart on trim + final assembly)
+NEW_PRODUCT_DATE = date(2025, 1, 20)
+NEW_PRODUCT_STATIONS = {"ST05", "ST06"}
 NEW_PRODUCT_DECAY_DAYS = 110          # defect bump decays over this many days
 NEW_PRODUCT_PEAK_MULT = 1.70          # initial defect multiplier on affected stns
 NEW_PRODUCT_RAMP_DAYS = 90            # throughput ramps back to full over this
 
 # Reliability / PM program: from this date, mechanical faults reduced
-RELIABILITY_PROGRAM_DATE = date(2026, 9, 1)
+RELIABILITY_PROGRAM_DATE = date(2024, 9, 1)
 RELIABILITY_PROGRAM_MULT = 0.85
 
 # Continuous improvement on defects (learning): linear start->end multiplier
@@ -256,7 +259,8 @@ def build_assets():
         rows.append(dict(
             asset_id=f"ROB-{i:03d}", asset_class="robot", line=line,
             station=station,
-            model=rng.choice(["FANUC-M20", "ABB-IRB1600", "KUKA-KR10"]),
+            model=rng.choice(["FANUC-R2000iC", "ABB-IRB6700", "KUKA-KR-QUANTEC",
+                              "Duerr-EcoRP", "ABB-IRB5500-paint"]),
             install_age_hrs=int(rng.integers(200, 6000)), generation=1))
     for j in range(1, N_CONVEYOR_SEGMENTS + 1):
         line = LINES[(j - 1) % len(LINES)]
@@ -264,7 +268,8 @@ def build_assets():
         rows.append(dict(
             asset_id=f"CNV-{j:03d}", asset_class="conveyor", line=line,
             station=station,
-            model=rng.choice(["Dorner-3200", "Hytrol-ABEZ", "FlexLink-X85"]),
+            model=rng.choice(["Skillet-Conveyor", "EMS-Monorail", "AGV-Unit",
+                              "Lift-Turntable"]),
             install_age_hrs=int(rng.integers(500, 12000)), generation=1))
     return pd.DataFrame(rows)
 
@@ -434,18 +439,25 @@ def build_faults(assets, cal):
 # 4. PRODUCTION + EVERY DEFECT (full fidelity)
 # --------------------------------------------------------------------------
 def build_production_and_defects(assets, faults, cal):
-    # CREATION rate per station. Process stations (ST02-ST06) create defects;
-    # ST07 Flash Test/QC and ST08 Packaging are inspection/handling and create
-    # almost none -- they DETECT defects that originated upstream.
+    # CREATION rate per station. Process stations (ST01-ST06) create defects;
+    # ST07 Final Inspection and ST08 Roll/Brake Test are inspection points and
+    # create almost none -- they DETECT defects that originated upstream.
     CREATE_RATE = {
-        "ST01": 0.0008, "ST02": 0.0035, "ST03": 0.0050, "ST04": 0.0028,
-        "ST05": 0.0020, "ST06": 0.0015, "ST07": 0.0002, "ST08": 0.0001,
+        "ST01": 0.0010,   # Stamping
+        "ST02": 0.0030,   # Body Framing (dimensional)
+        "ST03": 0.0050,   # Robotic Spot Weld (highest)
+        "ST04": 0.0040,   # Paint (high)
+        "ST05": 0.0022,   # Trim
+        "ST06": 0.0028,   # Final Assembly (torque/fitment)
+        "ST07": 0.0002,   # Final Inspection (detect, not create)
+        "ST08": 0.0001,   # Roll & Brake Test (detect)
     }
     QC_IDX = STATION_ORDER["ST07"]   # primary inspection point
     FINAL = "ST08"
     P_LOCAL = 0.30                    # share caught at the creating station
-    DEFECT_TYPES = ["delamination", "scribe_misalign", "cell_crack",
-                    "frame_gap", "jbox_seal", "flash_underperf"]
+    DEFECT_TYPES = ["weld_splatter", "dimensional_oos", "paint_run",
+                    "orange_peel", "torque_oos", "water_leak",
+                    "gap_flush", "squeak_rattle", "sealer_gap"]
 
     faults = faults.copy()
     faults["hour"] = faults["ts"].dt.floor("h")
@@ -599,10 +611,10 @@ def build_events():
                          detail=f"{label} ({cstation}, x{cmult})"))
     rows.append(dict(event_date=NEW_PRODUCT_DATE, end_date=None,
                      category="new_product",
-                     detail="New product variant introduced (ST04/ST05 learning curve)"))
+                     detail="New model-year launch (ST05 Trim / ST06 Final Assembly learning curve)"))
     rows.append(dict(event_date=RELIABILITY_PROGRAM_DATE.isoformat(), end_date=None,
                      category="reliability_program",
-                     detail="PM program expansion - mechanical faults reduced"))
+                     detail="Weld-gun + handling PM program expansion - mechanical faults reduced"))
     return pd.DataFrame(rows)
 
 # --------------------------------------------------------------------------

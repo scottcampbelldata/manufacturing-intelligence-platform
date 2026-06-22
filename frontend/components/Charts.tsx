@@ -92,9 +92,9 @@ export function DefectOriginChart({ data }: { data: RootCause[] }) {
 export function YieldTrendChart({ data }: { data: YieldQuarter[] }) {
   const rows = data.map((d) => ({ ...d, q: d.qtr.slice(0, 7) }));
   const events: { q: string; label: string }[] = [
-    { q: "2026-04", label: "laser upgrade" },
-    { q: "2026-10", label: "bad batch" },
-    { q: "2027-01", label: "new product" },
+    { q: "2024-04", label: "weld retooling" },
+    { q: "2024-10", label: "bad batch" },
+    { q: "2025-01", label: "model-year launch" },
   ];
   return (
     <ResponsiveContainer width="100%" height={300}>
