@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  output: "standalone", // self-contained build for systemd deployment
+  output: "export",
+  trailingSlash: true,
 };
 module.exports = nextConfig;

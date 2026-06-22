@@ -13,8 +13,8 @@ Type=simple
 User=scott
 Group=scott
 WorkingDirectory=/home/scott/manufacturing-intelligence-platform/backend
-Environment="DATABASE_URL=postgresql://factory:CHANGEME@localhost:5432/manufacturing"
-Environment="CORS_ORIGINS=https://factory.scottcampbell.io,http://localhost:3000"
+EnvironmentFile=/home/scott/manufacturing-intelligence-platform/backend/.env
+Environment="PYTHONUNBUFFERED=1"
 # Use a venv created with: python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 ExecStart=/home/scott/manufacturing-intelligence-platform/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8002 --workers 2
 Restart=on-failure
