@@ -144,3 +144,84 @@ table.data th {
 }
 table.data td { font-size: 0.86rem; }
 table.data tr + tr td { border-top: 1px solid var(--edge-soft); }
+
+.architecture-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: center;
+  padding: 0.8rem;
+  border: 1px solid var(--edge-soft);
+  border-radius: 12px;
+  background: var(--panel-2);
+}
+
+.architecture-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--mute);
+  font-size: 0.78rem;
+}
+
+.architecture-step span:first-child {
+  color: var(--ink);
+}
+
+.architecture-arrow {
+  color: var(--accent-soft);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+.proof-item {
+  border: 1px solid var(--edge-soft);
+  border-radius: 10px;
+  background: var(--panel-2);
+  padding: 0.85rem;
+}
+
+.proof-label {
+  font-size: 0.66rem;
+  font-weight: 650;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--accent-soft);
+}
+
+.proof-value {
+  margin-top: 0.35rem;
+  color: var(--mute);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.proof-links {
+  display: grid;
+  gap: 0.65rem;
+  align-content: start;
+}
+
+.proof-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 2.65rem;
+  padding: 0 0.9rem;
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+  background: var(--panel-2);
+  color: var(--ink);
+  font-size: 0.84rem;
+  transition: border-color 140ms ease, transform 140ms ease;
+}
+
+.proof-link::after {
+  content: "->";
+  color: var(--accent-soft);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+.proof-link:hover {
+  border-color: rgba(224, 101, 63, 0.55);
+  transform: translateY(-1px);
+}
