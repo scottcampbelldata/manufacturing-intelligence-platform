@@ -10,6 +10,9 @@ ROOT = Path(__file__).resolve().parents[1]
 GENERATOR = ROOT / "generator"
 OUTPUT = GENERATOR / "output"
 
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 
 def count_csv_rows(path: Path) -> int:
     with path.open("r", encoding="utf-8", newline="") as fh:
