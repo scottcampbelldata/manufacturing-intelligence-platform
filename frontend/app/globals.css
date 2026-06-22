@@ -206,12 +206,14 @@ table.data tr + tr td { border-top: 1px solid var(--edge-soft); }
   align-items: center;
   justify-content: space-between;
   min-height: 2.65rem;
+  width: 100%;
   padding: 0 0.9rem;
   border: 1px solid var(--edge);
   border-radius: 10px;
   background: var(--panel-2);
   color: var(--ink);
   font-size: 0.84rem;
+  text-align: left;
   transition: border-color 140ms ease, transform 140ms ease;
 }
 
@@ -224,4 +226,52 @@ table.data tr + tr td { border-top: 1px solid var(--edge-soft); }
 .proof-link:hover {
   border-color: rgba(224, 101, 63, 0.55);
   transform: translateY(-1px);
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(4, 7, 14, 0.78);
+  backdrop-filter: blur(6px);
+}
+
+.modal-panel {
+  width: min(620px, 100%);
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0) 42%),
+    var(--panel);
+  padding: 1.25rem;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+}
+
+.modal-close {
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  color: var(--mute);
+  background: var(--panel-2);
+  font-size: 0.72rem;
+  padding: 0.35rem 0.7rem;
+}
+
+.modal-close:hover {
+  color: var(--ink);
+  border-color: rgba(224, 101, 63, 0.55);
+}
+
+.architecture-modal-flow {
+  margin-top: 1rem;
+  overflow: auto;
+  border: 1px solid var(--edge-soft);
+  border-radius: 12px;
+  background: var(--panel-2);
+  color: var(--ink);
+  padding: 1rem;
+  line-height: 1.45;
+  font-size: 0.86rem;
 }

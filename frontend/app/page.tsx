@@ -247,7 +247,7 @@ export default function Report() {
 
       <Card
         eyebrow="System proof"
-        title="Built as a real analytics pipeline"
+        title="Built as a production-style analytics pipeline"
         subtitle="The dashboard is the last mile of a reproducible data product: generation, schema, validation, API, deployment, and frontend are all present in the repo."
       >
         <ArchitectureStrip />

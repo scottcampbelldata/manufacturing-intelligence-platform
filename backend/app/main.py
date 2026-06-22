@@ -46,5 +46,20 @@ app.include_router(methodology.router)
 
 @app.get("/health")
 async def health():
-    row = await db.fetch_one("SELECT 1 AS ok")
-    return {"status": "ok", "db": row["ok"] == 1 if row else False}
+    row = await db.fetch_one(
+        """
+        SELECT
+            (SELECT COUNT(*) FROM dim_asset) AS asset_rows,
+            (SELECT COUNT(*) FROM fact_fault_events) AS fault_event_rows,
+            (SELECT COUNT(*) FROM fact_defect_events) AS defect_event_rows,
+            (SELECT COUNT(*) FROM fact_production) AS production_rows,
+            (SELECT MIN(ts)::date FROM fact_production) AS date_min,
+            (SELECT MAX(ts)::date FROM fact_production) AS date_max
+        """
+    )
+    return {
+        "status": "ok",
+        "database": "connected",
+        "db": True,
+        **(row or {}),
+    }
