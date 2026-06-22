@@ -1,31 +1,15 @@
-"""
-Manufacturing Intelligence Pipeline -- FastAPI backend.
-
-Serves the analytical SQL views as JSON endpoints for the Next.js dashboard.
-Run (dev):  uvicorn app.main:app --reload --port 8000
-Run (prod): gunicorn/uvicorn via systemd (see deploy/factory-api.service)
-"""
-from contextlib import asynccontextmanager
+"""Maintenance API while the manufacturing dataset is rebuilt."""
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
-from . import db
 from .config import CORS_ORIGINS
-from .routers import kpi, shifts, quality, reliability, trends
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    await db.connect()
-    yield
-    await db.disconnect()
 
 
 app = FastAPI(
-    title="Manufacturing Intelligence Pipeline API",
-    version="1.0.0",
-    description="Analytics API over a 3-year synthetic manufacturing dataset.",
-    lifespan=lifespan,
+    title="Manufacturing Intelligence API",
+    version="0.0.0-maintenance",
+    description="Temporarily offline while the dataset and schema are rebuilt.",
 )
 
 app.add_middleware(
@@ -35,14 +19,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(kpi.router)
-app.include_router(shifts.router)
-app.include_router(quality.router)
-app.include_router(reliability.router)
-app.include_router(trends.router)
-
 
 @app.get("/health")
 async def health():
-    row = await db.fetch_one("SELECT 1 AS ok")
-    return {"status": "ok", "db": row["ok"] == 1 if row else False}
+    return {"status": "maintenance", "db": False}
+
+
+@app.get("/api/{path:path}")
+async def api_maintenance(path: str):
+    return JSONResponse(
+        status_code=503,
+        content={
+            "status": "maintenance",
+            "message": "Dataset and database are being rebuilt.",
+        },
+    )
