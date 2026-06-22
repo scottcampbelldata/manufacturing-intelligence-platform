@@ -53,3 +53,13 @@ async def provenance():
 @router.get("/views")
 async def views():
     return [{"section": k, "logic": v} for k, v in VIEW_SQL.items()]
+
+
+@router.get("")
+async def methodology():
+    """One-call methodology payload for manual verification and reviewers."""
+    return {
+        "validation": await validation(),
+        "provenance": PROVENANCE,
+        "views": await views(),
+    }
