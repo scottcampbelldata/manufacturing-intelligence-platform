@@ -1,103 +1,108 @@
-# Deployment Runbook — Manufacturing Intelligence Platform
+# Deployment Runbook - Manufacturing Intelligence Platform
 
-End-to-end: generate data, load Postgres, run the API and dashboard behind nginx.
-Assumes a Linux VPS with PostgreSQL (or TimescaleDB), Python 3.11+, Node 18+, and
-nginx already installed. Replace `factory.scottcampbell.io` and the DB password.
+Backend/API deploy for the Hetzner VPS. The frontend is hosted elsewhere and
+should call `https://factory-api.scottcampbell.io`.
 
----
+Assumes the VPS has PostgreSQL 17, Python 3.14+, nginx, and systemd. Replace the
+DB password before installing the service.
 
-## 0. Get the code onto the VPS
+## 0. Get The Code Onto The VPS
+
 ```bash
-sudo mkdir -p /opt/manufacturing-intelligence-platform
-sudo chown $USER /opt/manufacturing-intelligence-platform
-# from your machine:
-rsync -av --exclude node_modules --exclude .venv \
-  C:/Dev/Projects/manufacturing-intelligence-platform/ \
-  deploy@VPS:/opt/manufacturing-intelligence-platform/
-```
-(or push to a git remote and clone on the VPS.)
-
-## 1. Generate the dataset
-Runs the seeded generator → writes CSVs to `generator/output/` (~66 MB).
-```bash
-cd /opt/manufacturing-intelligence-platform/generator
-python3 -m pip install numpy pandas
-python3 generate_factory_data.py
+cd /home/scott
+git clone https://github.com/scottcampbelldata/manufacturing-intelligence-platform.git
+cd manufacturing-intelligence-platform
 ```
 
-## 2. Create the database + schema
+## 1. Generate The Dataset
+
+Runs the seeded generator and writes CSVs to `generator/output/`.
+
+```bash
+cd /home/scott/manufacturing-intelligence-platform
+python3 -m venv backend/.venv
+backend/.venv/bin/pip install -r backend/requirements.txt numpy pandas psycopg2-binary
+cd generator
+../backend/.venv/bin/python generate_factory_data.py
+```
+
+## 2. Create The Database And Schema
+
 ```bash
 sudo -u postgres psql -c "CREATE DATABASE manufacturing;"
 sudo -u postgres psql -c "CREATE USER factory WITH PASSWORD 'CHANGEME';"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE manufacturing TO factory;"
 
 export DATABASE_URL="postgresql://factory:CHANGEME@localhost:5432/manufacturing"
-cd /opt/manufacturing-intelligence-platform
+cd /home/scott/manufacturing-intelligence-platform
 psql "$DATABASE_URL" -f db/schema.sql
 ```
 
-## 3. Load the data (fast COPY path)
+## 3. Load The Data
+
 ```bash
-cd /opt/manufacturing-intelligence-platform
-python3 -m pip install psycopg2-binary
-python3 db/load_data.py
+cd /home/scott/manufacturing-intelligence-platform
+backend/.venv/bin/python db/load_data.py
 psql "$DATABASE_URL" -f db/analytical_views.sql
 ```
-Expect ~711k defect rows and the views created. Sanity check:
+
+Sanity checks:
+
 ```bash
 psql "$DATABASE_URL" -c "SELECT * FROM v_kpi_overall;"
 psql "$DATABASE_URL" -c "SELECT * FROM v_mttr_by_crew ORDER BY mttr_min DESC;"
 ```
 
-## 4. Backend (FastAPI)
+## 4. Start The API
+
+Quick foreground test:
+
 ```bash
-cd /opt/manufacturing-intelligence-platform/backend
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
-# quick test:
-DATABASE_URL="$DATABASE_URL" .venv/bin/uvicorn app.main:app --port 8000
-# curl http://127.0.0.1:8000/api/kpi  -> JSON
+cd /home/scott/manufacturing-intelligence-platform/backend
+DATABASE_URL="$DATABASE_URL" .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8002
+curl http://127.0.0.1:8002/api/kpi
 ```
-Then install the service (edit DATABASE_URL/User/paths in the unit first):
+
+Install the service after editing `CHANGEME`:
+
 ```bash
+cd /home/scott/manufacturing-intelligence-platform
 sudo cp deploy/factory-api.service /etc/systemd/system/
-sudo systemctl daemon-reload && sudo systemctl enable --now factory-api
+sudo systemctl daemon-reload
+sudo systemctl enable --now factory-api
 ```
 
-## 5. Frontend (Next.js)
+## 5. nginx And TLS
+
+Point `factory-api.scottcampbell.io` at `37.27.255.215`, then:
+
 ```bash
-cd /opt/manufacturing-intelligence-platform/frontend
-npm ci
-npm run build
-sudo cp ../deploy/factory-web.service /etc/systemd/system/
-sudo systemctl daemon-reload && sudo systemctl enable --now factory-web
+cd /home/scott/manufacturing-intelligence-platform
+sudo cp deploy/nginx.conf /etc/nginx/sites-available/factory-api.scottcampbell.io.conf
+sudo ln -s /etc/nginx/sites-available/factory-api.scottcampbell.io.conf /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+sudo certbot --nginx -d factory-api.scottcampbell.io
 ```
 
-## 6. nginx + TLS
+Verify:
+
 ```bash
-sudo cp deploy/nginx.conf /etc/nginx/sites-available/factory
-sudo ln -s /etc/nginx/sites-available/factory /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-sudo certbot --nginx -d factory.scottcampbell.io
+curl https://factory-api.scottcampbell.io/health
+curl https://factory-api.scottcampbell.io/api/kpi
 ```
 
-Open `https://factory.scottcampbell.io`. The dashboard loads, hits `/api/*`
-on the same origin, nginx routes it to FastAPI. Done.
+## Updating
 
----
-
-## Updating after code changes
 ```bash
-cd /opt/manufacturing-intelligence-platform && git pull   # or rsync
-# backend changed:
+cd /home/scott/manufacturing-intelligence-platform
+git pull
 sudo systemctl restart factory-api
-# frontend changed:
-cd frontend && npm run build && sudo systemctl restart factory-web
 ```
 
 ## Troubleshooting
-- `journalctl -u factory-api -f` / `journalctl -u factory-web -f` for logs.
-- API 500s → check DATABASE_URL in the unit and that views exist.
-- Dashboard "Failed to reach the API" → confirm nginx `/api/` block and that
-  factory-api is listening on 127.0.0.1:8000.
-- Reload data anytime: re-run `db/load_data.py` (it truncates + reloads).
+
+- `journalctl -u factory-api -f` for logs.
+- API 500s: check `DATABASE_URL` in the unit and confirm the views exist.
+- Frontend CORS errors: confirm `CORS_ORIGINS` includes the hosted frontend origin.
+- Reload data anytime: re-run `backend/.venv/bin/python db/load_data.py`.
