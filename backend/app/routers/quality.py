@@ -6,9 +6,9 @@ router = APIRouter(prefix="/api/quality", tags=["quality"])
 
 # Friendly station names for the frontend.
 STATION_NAMES = {
-    "ST01": "Substrate Load", "ST02": "Deposition", "ST03": "Laser Scribe",
-    "ST04": "Lamination", "ST05": "Edge Seal / Frame", "ST06": "Junction Box",
-    "ST07": "Flash Test / QC", "ST08": "Packaging",
+    "ST01": "Stamping", "ST02": "Body Framing", "ST03": "Robotic Spot Weld",
+    "ST04": "Paint", "ST05": "Trim", "ST06": "Final Assembly",
+    "ST07": "Final Inspection", "ST08": "Roll & Brake Test",
 }
 
 

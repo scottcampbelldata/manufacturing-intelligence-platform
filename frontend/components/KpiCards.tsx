@@ -2,27 +2,29 @@ import { Kpi } from "@/lib/api";
 
 function fmt(n: number): string {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
-  if (n >= 1_000) return (n / 1_000).toFixed(0) + "k";
+  if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, "") + "k";
   return n.toLocaleString();
 }
 
 export function KpiCards({ kpi }: { kpi: Kpi }) {
   const cards = [
-    { label: "Units produced (3 yr)", value: fmt(kpi.total_produced) },
-    { label: "Overall yield", value: kpi.yield_pct.toFixed(2) + "%" },
-    { label: "Total scrap", value: fmt(kpi.total_scrap) },
+    { value: fmt(kpi.total_produced), label: "Units produced", sub: "across 3 years" },
+    { value: kpi.yield_pct.toFixed(2) + "%", label: "Overall yield", sub: "first-pass" },
+    { value: fmt(kpi.total_scrap), label: "Defects tracked", sub: "every record" },
+    { value: fmt(kpi.total_faults), label: "Equipment faults", sub: "with downtime" },
     {
-      label: "Downtime hours",
-      value: fmt(Math.round(kpi.total_downtime_min / 60)),
+      value: fmt(kpi.production_hours),
+      label: "Production hours",
+      sub: "3 lines, hourly",
     },
-    { label: "Line-hours analyzed", value: fmt(kpi.line_hours) },
   ];
   return (
-    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
       {cards.map((c) => (
-        <div key={c.label} className="card">
+        <div key={c.label} className="kpi">
           <div className="kpi-value">{c.value}</div>
           <div className="kpi-label">{c.label}</div>
+          <div className="kpi-sub">{c.sub}</div>
         </div>
       ))}
     </div>

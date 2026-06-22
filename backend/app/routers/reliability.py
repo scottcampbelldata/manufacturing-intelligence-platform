@@ -32,5 +32,14 @@ async def faults_by_quarter():
 async def summer_thermal():
     """Thermal faults per summer -- year-over-year season severity."""
     return await fetch_all(
-        "SELECT * FROM v_summer_thermal WHERE yr < 2028 ORDER BY yr"
+        "SELECT * FROM v_summer_thermal ORDER BY yr"
+    )
+
+
+@router.get("/replace-candidates")
+async def replace_candidates(limit: int = Query(10, ge=1, le=40)):
+    """Robots whose fault rate is rising -- budget-to-replace shortlist."""
+    return await fetch_all(
+        "SELECT * FROM v_robot_candidates ORDER BY total_faults DESC LIMIT $1",
+        limit,
     )

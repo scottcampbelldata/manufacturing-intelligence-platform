@@ -14,6 +14,8 @@ export interface Kpi {
   total_scrap: number;
   yield_pct: number;
   total_downtime_min: number;
+  total_faults: number;
+  production_hours: number;
 }
 export interface MttrCrew {
   crew: string;
@@ -59,9 +61,64 @@ export interface FactoryEvent {
   category: string;
   detail: string;
 }
+export interface Oee {
+  availability_pct: number;
+  performance_pct: number;
+  quality_pct: number;
+  oee_pct: number;
+  line_hours: number;
+  planned_units: number;
+  produced_units: number;
+  scrap_units: number;
+  downtime_hours: number;
+}
+export interface OeeLine {
+  line: string;
+  availability_pct: number;
+  performance_pct: number;
+  quality_pct: number;
+  oee_pct: number;
+}
+export interface StationLoss {
+  station: string;
+  station_name: string;
+  downtime_hrs: number;
+  faults: number;
+  scrap_units: number;
+  downtime_idx: number;
+  scrap_idx: number;
+  loss_index: number;
+}
+export interface ReplaceCandidate {
+  asset_id: string;
+  station: string;
+  model: string;
+  total_faults: number;
+  faults_prior: number;
+  faults_recent: number;
+  avg_repair_min: number;
+  downtime_hrs: number;
+  trend: string;
+}
+export interface ValidationCheck {
+  check_name: string;
+  value: string;
+  status: string;
+}
+export interface Provenance {
+  source: string;
+  no_proprietary_data: boolean;
+  seed: number;
+  reproducible: string;
+  modeling: string[];
+  oee_definition: string;
+}
 
 export const api = {
   kpi: () => get<Kpi>("/api/kpi"),
+  oee: () => get<Oee>("/api/exec/oee"),
+  oeeByLine: () => get<OeeLine[]>("/api/exec/oee/by-line"),
+  lossByStation: () => get<StationLoss[]>("/api/exec/loss/by-station"),
   mttrByCrew: () => get<MttrCrew[]>("/api/shifts/mttr-by-crew"),
   handoff: () => get<Handoff[]>("/api/shifts/handoff"),
   rootCause: () => get<RootCause[]>("/api/quality/root-cause"),
@@ -69,5 +126,9 @@ export const api = {
   yieldByQuarter: () => get<YieldQuarter[]>("/api/trends/yield-by-quarter"),
   summerThermal: () => get<SummerThermal[]>("/api/reliability/summer-thermal"),
   topAssets: () => get<TopAsset[]>("/api/reliability/top-assets?limit=10"),
+  replaceCandidates: () =>
+    get<ReplaceCandidate[]>("/api/reliability/replace-candidates?limit=10"),
   events: () => get<FactoryEvent[]>("/api/trends/events"),
+  validation: () => get<ValidationCheck[]>("/api/methodology/validation"),
+  provenance: () => get<Provenance>("/api/methodology/provenance"),
 };
