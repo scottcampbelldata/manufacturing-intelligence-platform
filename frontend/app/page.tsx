@@ -31,6 +31,8 @@ import {
   LossByStation,
   ReplaceCandidates,
   MethodologyPanel,
+  ArchitectureStrip,
+  SystemProof,
 } from "@/components/Sections";
 
 interface Data {
@@ -200,6 +202,17 @@ export default function Report() {
           </Takeaway>
         </Card>
       </section>
+
+      <Card
+        eyebrow="System proof"
+        title="Built as a real analytics pipeline"
+        subtitle="The dashboard is the last mile of a reproducible data product: generation, schema, validation, API, deployment, and frontend are all present in the repo."
+      >
+        <ArchitectureStrip />
+        <div className="mt-5">
+          <SystemProof />
+        </div>
+      </Card>
 
       {/* Methodology */}
       <Card
