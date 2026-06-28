@@ -1,5 +1,6 @@
 "use client";
 import { Oee, OeeLine } from "@/lib/api";
+import { chart, MONO } from "@/lib/theme";
 
 function Donut({ value }: { value: number }) {
   const r = 52;
@@ -7,23 +8,31 @@ function Donut({ value }: { value: number }) {
   const off = c * (1 - value / 100);
   return (
     <svg viewBox="0 0 140 140" className="w-[140px] h-[140px]">
-      <circle cx="70" cy="70" r={r} fill="none" stroke="#1f2a44" strokeWidth="14" />
+      <circle cx="70" cy="70" r={r} fill="none" stroke={chart.edge} strokeWidth="14" />
       <circle
         cx="70"
         cy="70"
         r={r}
         fill="none"
-        stroke="#e0653f"
+        stroke={chart.good}
         strokeWidth="14"
         strokeLinecap="round"
         strokeDasharray={c}
         strokeDashoffset={off}
         transform="rotate(-90 70 70)"
       />
-      <text x="70" y="66" textAnchor="middle" fontSize="30" fontWeight="700" fill="#fff">
+      <text
+        x="70"
+        y="66"
+        textAnchor="middle"
+        fontSize="30"
+        fontWeight="600"
+        fill="#fff"
+        fontFamily={MONO}
+      >
         {value.toFixed(1)}
       </text>
-      <text x="70" y="88" textAnchor="middle" fontSize="11" fill="#8896b4" letterSpacing="1.5">
+      <text x="70" y="88" textAnchor="middle" fontSize="11" fill={chart.mute} letterSpacing="1.5">
         OEE %
       </text>
     </svg>
@@ -42,7 +51,7 @@ function Component({ label, value }: { label: string; value: number }) {
           className="h-full rounded-full"
           style={{
             width: `${value}%`,
-            background: "linear-gradient(90deg,#5b7cc8,#3aa17a)",
+            background: `linear-gradient(90deg, ${chart.steel}, ${chart.good})`,
           }}
         />
       </div>

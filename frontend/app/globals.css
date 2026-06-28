@@ -2,20 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =====================================================================
+   Tokens — instrument-cluster / plant control-room identity.
+   Graphite ground, STEEL for baseline data, AMBER (accent) for the insight,
+   GOOD/DANGER reserved for pass-fail and heat. Single source of truth;
+   Tailwind colors reference these variables.
+   ===================================================================== */
 :root {
   color-scheme: dark;
-  --bg: #0a0e1a;
-  --panel: #121a2e;
-  --panel-2: #0e1525;
-  --edge: #1f2a44;
-  --edge-soft: #18223a;
-  --ink: #eef3fc;
-  --mute: #8896b4;
-  --faint: #5d6a86;
-  --accent: #e0653f;
-  --accent-soft: #f2906f;
-  --good: #3aa17a;
-  --blue: #5b7cc8;
+  --bg: #0c0f14;
+  --panel: #141922;
+  --panel-2: #1a2029;
+  --edge: #2a323d;
+  --edge-soft: #20272f;
+  --ink: #eaeef4; /* primary text */
+  --text: #eaeef4;
+  --mute: #98a4b3;
+  --faint: #67727f;
+  --steel: #6f8aab; /* baseline data */
+  --accent: #f2a93b; /* amber — the insight / attention */
+  --accent-soft: #f7c476;
+  --good: #4fb286;
+  --danger: #e5544b;
+  --blue: #6f8aab; /* legacy alias -> steel */
 }
 
 * {
@@ -24,60 +33,74 @@
 }
 
 body {
+  /* Neutral graphite with a single soft overhead light — no blue cast. */
   background:
-    radial-gradient(1100px 520px at 78% -8%, #16203a 0%, rgba(10, 14, 26, 0) 60%),
-    radial-gradient(900px 500px at 0% 0%, #141d33 0%, rgba(10, 14, 26, 0) 55%),
+    radial-gradient(1200px 620px at 50% -12%, #171d27 0%, rgba(12, 15, 20, 0) 62%),
     var(--bg);
   color: var(--ink);
   min-height: 100vh;
   letter-spacing: -0.01em;
+  font-feature-settings: "ss01", "cv01";
+}
+
+/* Mono numerals everywhere figures appear — the instrument-readout signature. */
+.tnum {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+h1,
+.display {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
 }
 
 /* Layered card with subtle depth and a hairline top highlight */
 .card {
   position: relative;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0) 40%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0) 40%),
     var(--panel);
   border: 1px solid var(--edge);
-  border-radius: 16px;
+  border-radius: 14px;
   padding: 1.35rem 1.45rem;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.03) inset,
-    0 12px 30px -18px rgba(0, 0, 0, 0.7);
+    0 1px 0 rgba(255, 255, 255, 0.025) inset,
+    0 14px 32px -20px rgba(0, 0, 0, 0.8);
 }
 
 .eyebrow {
+  font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.66rem;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--accent-soft);
+  color: var(--accent);
 }
 
 .section-title {
-  font-size: 1.06rem;
-  font-weight: 650;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: 1.12rem;
+  font-weight: 600;
   color: #fff;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
 .section-sub {
   font-size: 0.86rem;
   color: var(--mute);
-  margin-top: 0.2rem;
+  margin-top: 0.25rem;
   line-height: 1.45;
 }
 
-/* KPI tile */
+/* KPI tile — reads like a gauge readout */
 .kpi {
   position: relative;
   overflow: hidden;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0) 45%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0) 45%),
     var(--panel);
   border: 1px solid var(--edge);
-  border-radius: 14px;
+  border-radius: 12px;
   padding: 1.05rem 1.15rem 1.1rem;
 }
 .kpi::before {
@@ -87,22 +110,24 @@ body {
   top: 0;
   bottom: 0;
   width: 3px;
-  background: linear-gradient(180deg, var(--accent), transparent);
-  opacity: 0.85;
+  background: linear-gradient(180deg, var(--steel), transparent);
+  opacity: 0.8;
 }
 .kpi-value {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
   font-size: 1.7rem;
-  font-weight: 680;
+  font-weight: 600;
   color: #fff;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   line-height: 1.1;
 }
 .kpi-label {
   font-size: 0.66rem;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   color: var(--mute);
-  margin-top: 0.45rem;
+  margin-top: 0.5rem;
 }
 .kpi-sub {
   font-size: 0.7rem;
@@ -114,7 +139,8 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.68rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.66rem;
   letter-spacing: 0.04em;
   color: var(--mute);
   border: 1px solid var(--edge);
@@ -127,22 +153,26 @@ body {
   height: 6px;
   border-radius: 999px;
   background: var(--good);
-  box-shadow: 0 0 0 3px rgba(58, 161, 122, 0.18);
+  box-shadow: 0 0 0 3px rgba(79, 178, 134, 0.18);
 }
 
 /* refined scrollbars */
 *::-webkit-scrollbar { width: 9px; height: 9px; }
-*::-webkit-scrollbar-thumb { background: #243049; border-radius: 8px; }
+*::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 8px; }
 *::-webkit-scrollbar-track { background: transparent; }
 
 table.data th {
   font-weight: 600;
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--faint);
 }
-table.data td { font-size: 0.86rem; }
+table.data td {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.82rem;
+}
 table.data tr + tr td { border-top: 1px solid var(--edge-soft); }
 
 .architecture-strip {
@@ -169,8 +199,8 @@ table.data tr + tr td { border-top: 1px solid var(--edge-soft); }
 }
 
 .architecture-arrow {
-  color: var(--accent-soft);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  color: var(--accent);
+  font-family: var(--font-mono), ui-monospace, monospace;
 }
 
 .proof-item {
@@ -181,15 +211,16 @@ table.data tr + tr td { border-top: 1px solid var(--edge-soft); }
 }
 
 .proof-label {
-  font-size: 0.66rem;
-  font-weight: 650;
-  letter-spacing: 0.11em;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--accent-soft);
+  color: var(--accent);
 }
 
 .proof-value {
-  margin-top: 0.35rem;
+  margin-top: 0.4rem;
   color: var(--mute);
   font-size: 0.84rem;
   line-height: 1.45;
@@ -214,17 +245,18 @@ table.data tr + tr td { border-top: 1px solid var(--edge-soft); }
   color: var(--ink);
   font-size: 0.84rem;
   text-align: left;
-  transition: border-color 140ms ease, transform 140ms ease;
+  transition: border-color 140ms ease, transform 140ms ease, background 140ms ease;
 }
 
 .proof-link::after {
   content: "->";
-  color: var(--accent-soft);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  color: var(--accent);
+  font-family: var(--font-mono), ui-monospace, monospace;
 }
 
 .proof-link:hover {
-  border-color: rgba(224, 101, 63, 0.55);
+  border-color: rgba(242, 169, 59, 0.5);
+  background: #1f2630;
   transform: translateY(-1px);
 }
 
@@ -235,7 +267,7 @@ table.data tr + tr td { border-top: 1px solid var(--edge-soft); }
   display: grid;
   place-items: center;
   padding: 1rem;
-  background: rgba(4, 7, 14, 0.78);
+  background: rgba(4, 6, 10, 0.8);
   backdrop-filter: blur(6px);
 }
 
@@ -244,10 +276,10 @@ table.data tr + tr td { border-top: 1px solid var(--edge-soft); }
   border: 1px solid var(--edge);
   border-radius: 14px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0) 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0) 42%),
     var(--panel);
   padding: 1.25rem;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6);
 }
 
 .modal-close {
@@ -261,7 +293,7 @@ table.data tr + tr td { border-top: 1px solid var(--edge-soft); }
 
 .modal-close:hover {
   color: var(--ink);
-  border-color: rgba(224, 101, 63, 0.55);
+  border-color: rgba(242, 169, 59, 0.5);
 }
 
 .architecture-modal-flow {
@@ -274,4 +306,5 @@ table.data tr + tr td { border-top: 1px solid var(--edge-soft); }
   padding: 1rem;
   line-height: 1.45;
   font-size: 0.86rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
 }
