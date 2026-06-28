@@ -1,3 +1,4 @@
+import asyncio
 
 from fastapi.testclient import TestClient
 
@@ -66,3 +67,43 @@ def test_openapi_is_typed(loaded_db, monkeypatch):
             "content"
         ]["application/json"]["schema"]
         assert "$ref" in kpi_schema
+
+
+def test_health_is_liveness_only(loaded_db, monkeypatch):
+    """/health is a pure liveness probe -- no database fields, no DB query."""
+    monkeypatch.setenv("DATABASE_URL", loaded_db)
+
+    from backend.app.main import app
+
+    with TestClient(app) as client:
+        r = client.get("/health")
+        assert r.status_code == 200
+        assert r.json() == {"status": "ok", "service": "factory-api"}
+
+
+def test_system_reports_real_db_state(loaded_db, monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", loaded_db)
+
+    from backend.app.config import SCHEMA_VERSION
+    from backend.app.main import app
+
+    with TestClient(app) as client:
+        r = client.get("/api/system")
+        assert r.status_code == 200
+        body = r.json()
+        assert body["database"] == "connected"
+        assert body["db"] is True
+        assert body["schema_version"] == SCHEMA_VERSION
+        assert body["tables"]["dim_station"] == 8
+
+
+def test_system_payload_reports_error_when_db_unreachable():
+    """With no pool connected, readiness must report error -- never raise."""
+    import backend.app.main as m
+
+    asyncio.run(m.db.disconnect())
+    payload = asyncio.run(m.system_payload())
+    assert payload["db"] is False
+    assert payload["database"] == "error"
+    assert payload["status"] == "error"
+    assert payload["tables"]["fact_defect_events"] is None
