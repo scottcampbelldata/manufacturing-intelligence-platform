@@ -10,6 +10,13 @@ DATABASE_URL = os.environ.get(
     "postgresql://postgres:postgres@localhost:5432/manufacturing",
 )
 
+# Static dataset metadata surfaced by /api/system and /api/methodology.
+SCHEMA_VERSION = "2026.06.27"
+DATASET_SEED = 1970
+
+# Seconds to cache the (static, between-reloads) analytical responses.
+CACHE_TTL_SECONDS = int(os.environ.get("CACHE_TTL_SECONDS", "300"))
+
 # Comma-separated list of allowed CORS origins for the Next.js frontend.
 # e.g. "https://factory.scottcampbell.io,http://localhost:3000"
 CORS_ORIGINS = [

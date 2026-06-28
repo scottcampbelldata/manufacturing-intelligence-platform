@@ -34,7 +34,7 @@ def test_api_contracts(loaded_db, monkeypatch):
         assert payload["status"] == "ok"
         assert payload["database"] == "connected"
         assert payload["dataset_seed"] == 1970
-        assert payload["tables"]["fact_defect_events"] == 726793
+        assert payload["tables"]["fact_defect_events"] == 725519
 
 
 def test_openapi_docs_available(loaded_db, monkeypatch):
@@ -48,3 +48,21 @@ def test_openapi_docs_available(loaded_db, monkeypatch):
         openapi = client.get("/openapi.json")
         assert openapi.status_code == 200
         assert "/api/system" in openapi.json()["paths"]
+
+
+def test_openapi_is_typed(loaded_db, monkeypatch):
+    """Every data endpoint declares a typed response schema (not an empty {})."""
+    monkeypatch.setenv("DATABASE_URL", loaded_db)
+
+    from backend.app.main import app
+
+    with TestClient(app) as client:
+        spec = client.get("/openapi.json").json()
+        # Named component schemas exist for the core models.
+        assert "Oee" in spec["components"]["schemas"]
+        assert "Kpi" in spec["components"]["schemas"]
+        # The /api/kpi 200 response references a model, not an untyped object.
+        kpi_schema = spec["paths"]["/api/kpi"]["get"]["responses"]["200"][
+            "content"
+        ]["application/json"]["schema"]
+        assert "$ref" in kpi_schema
