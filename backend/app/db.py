@@ -22,6 +22,22 @@ async def disconnect() -> None:
         _pool = None
 
 
+async def ping() -> bool:
+    """Return True iff the pool is initialized and a trivial query succeeds.
+
+    Never raises -- this is the readiness probe, so a failure must be reported,
+    not propagated.
+    """
+    if _pool is None:
+        return False
+    try:
+        async with _pool.acquire() as conn:
+            await conn.execute("SELECT 1")
+        return True
+    except Exception:
+        return False
+
+
 def _clean(value):
     """Make asyncpg-returned values JSON-serializable."""
     if isinstance(value, Decimal):
