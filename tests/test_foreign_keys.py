@@ -1,3 +1,8 @@
+import pytest
+
+pytestmark = pytest.mark.db
+
+
 def scalar(conn, sql):
     with conn.cursor() as cur:
         cur.execute(sql)

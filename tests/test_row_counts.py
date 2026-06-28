@@ -1,12 +1,17 @@
+import pytest
+
+pytestmark = pytest.mark.db
+
 EXPECTED_TABLE_COUNTS = {
+    "dim_station": 8,
     "dim_asset": 157,
     "dim_shift_calendar": 2192,
     "dim_events": 7,
-    "fact_fault_events": 8040,
-    "fact_maintenance_events": 3029,
+    "fact_fault_events": 8088,
+    "fact_maintenance_events": 3033,
     "fact_production": 78912,
-    "fact_defect_events": 726793,
-    "shift_logs": 6043,
+    "fact_defect_events": 725519,
+    "shift_logs": 6003,
 }
 
 
