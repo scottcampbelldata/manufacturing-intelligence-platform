@@ -1,4 +1,7 @@
+import pytest
 from fastapi.testclient import TestClient
+
+pytestmark = pytest.mark.db
 
 
 def test_validation_endpoint_reports_expected_passes(loaded_db, monkeypatch):

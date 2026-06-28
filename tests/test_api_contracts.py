@@ -1,8 +1,10 @@
 import asyncio
 
+import pytest
 from fastapi.testclient import TestClient
 
 
+@pytest.mark.db
 def test_api_contracts(loaded_db, monkeypatch):
     monkeypatch.setenv("DATABASE_URL", loaded_db)
 
@@ -38,6 +40,7 @@ def test_api_contracts(loaded_db, monkeypatch):
         assert payload["tables"]["fact_defect_events"] == 725519
 
 
+@pytest.mark.db
 def test_openapi_docs_available(loaded_db, monkeypatch):
     monkeypatch.setenv("DATABASE_URL", loaded_db)
 
@@ -51,6 +54,7 @@ def test_openapi_docs_available(loaded_db, monkeypatch):
         assert "/api/system" in openapi.json()["paths"]
 
 
+@pytest.mark.db
 def test_openapi_is_typed(loaded_db, monkeypatch):
     """Every data endpoint declares a typed response schema (not an empty {})."""
     monkeypatch.setenv("DATABASE_URL", loaded_db)
@@ -69,6 +73,7 @@ def test_openapi_is_typed(loaded_db, monkeypatch):
         assert "$ref" in kpi_schema
 
 
+@pytest.mark.db
 def test_cache_control_on_data_but_not_system(loaded_db, monkeypatch):
     monkeypatch.setenv("DATABASE_URL", loaded_db)
 
@@ -81,6 +86,7 @@ def test_cache_control_on_data_but_not_system(loaded_db, monkeypatch):
         assert "max-age" not in system.headers.get("cache-control", "")
 
 
+@pytest.mark.db
 def test_health_is_liveness_only(loaded_db, monkeypatch):
     """/health is a pure liveness probe -- no database fields, no DB query."""
     monkeypatch.setenv("DATABASE_URL", loaded_db)
@@ -93,6 +99,7 @@ def test_health_is_liveness_only(loaded_db, monkeypatch):
         assert r.json() == {"status": "ok", "service": "factory-api"}
 
 
+@pytest.mark.db
 def test_system_reports_real_db_state(loaded_db, monkeypatch):
     monkeypatch.setenv("DATABASE_URL", loaded_db)
 
