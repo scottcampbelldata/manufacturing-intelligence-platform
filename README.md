@@ -106,14 +106,15 @@ generator -> CSVs -> PostgreSQL -> analytical views -> FastAPI -> Next.js report
 ## Repository layout
 
 ```text
-generator/   Seeded Python generator for a 3-year synthetic factory dataset
-db/          Star schema, analytical views, and COPY loader
-backend/     FastAPI service that exposes SQL views as JSON
-frontend/    Next.js and Recharts analytics report
+generator/   Seeded Python generator (CLI) for a 3-year synthetic factory dataset
+db/          Star schema (dim_station + facts), analytical views, COPY loader
+backend/     FastAPI service: typed endpoints, TTL cache, honest health checks
+frontend/    Next.js + Recharts report, with Vitest unit/render tests
 deploy/      systemd unit, nginx config, VPS runbook, and DB reset helper
 docs/        screenshots, schema documentation, and reviewer-oriented proof
-tests/       pytest validation suite for generator, database, and API contracts
-.github/     CI workflow that runs tests against PostgreSQL and builds frontend
+tests/       pytest suite (unit + PostgreSQL integration; `db` marker)
+.github/     CI: unit (lint + no-DB tests), integration (Postgres), frontend
+Makefile / docker-compose.yml / tasks.ps1   one-command local dev
 ```
 
 ## System proof
@@ -146,15 +147,36 @@ Defects include weld splatter, dimensional out-of-spec, paint runs, torque out-o
 
 ## Quick start
 
-### 1. Generate synthetic data
+### Fastest path (Docker + Make)
+
+Brings up PostgreSQL and runs the whole generate -> load -> views pipeline:
+
+```bash
+pip install -r backend/requirements.txt psycopg2-binary numpy pandas
+make demo          # docker compose up + generate + load + views
+cd backend && uvicorn app.main:app --port 8000
+```
+
+Windows (PowerShell) equivalent: `./tasks.ps1 demo`.
+
+Common targets: `make generate | load | views | pipeline | test | test-unit |
+lint`. Run `make help` for the full list.
+
+### Manual path
+
+#### 1. Generate synthetic data
 
 ```bash
 cd generator
 pip install numpy pandas
-python generate_factory_data.py
+python generate_factory_data.py          # canonical seeded dataset
+python generate_factory_data.py --seed 7 --days 365   # experiment with a variant
 ```
 
-### 2. Create and load the database
+The generator is reproducible: `--seed` defaults to `1970` and re-running with
+defaults reproduces the published dataset exactly.
+
+#### 2. Create and load the database
 
 ```bash
 createdb manufacturing
@@ -168,7 +190,7 @@ python db/load_data.py
 psql "$DATABASE_URL" -f db/analytical_views.sql
 ```
 
-### 3. Run the backend
+#### 3. Run the backend
 
 ```bash
 cd backend
@@ -178,7 +200,7 @@ python -m venv .venv
 DATABASE_URL="$DATABASE_URL" .venv/bin/uvicorn app.main:app --port 8000
 ```
 
-### 4. Run the frontend
+#### 4. Run the frontend
 
 Open a new shell:
 
@@ -211,12 +233,18 @@ docs/schema.md
 ### Health and methodology
 
 ```text
-GET /health
-GET /api/system
+GET /health                       liveness  (process up; no database call)
+GET /health/ready                 readiness (503 if the database is unreachable)
+GET /api/system                   readiness + dataset metadata
 GET /api/methodology
 GET /api/methodology/validation
 GET /api/methodology/provenance
+GET /api/methodology/views        real SQL DDL for each backing view
 ```
+
+`/health` is a pure liveness probe and never touches the database, so it stays
+green even during a DB blip. `/health/ready` and `/api/system` run a real query
+and return HTTP 503 with `"database": "error"` when the database is unreachable.
 
 Example system response:
 
@@ -282,36 +310,44 @@ curl https://factory-api.scottcampbell.io/api/methodology/validation
 
 ## Automated tests and CI
 
-The repository includes a pytest suite under `tests/`:
+Tests split into a fast unit tier (no database) and a PostgreSQL integration
+tier, marked with `@pytest.mark.db`:
 
 ```text
-tests/test_generator_reproducibility.py
-tests/test_row_counts.py
-tests/test_foreign_keys.py
-tests/test_api_contracts.py
-tests/test_validation_endpoint.py
+tests/test_generator_helpers.py          unit: seasonal/event math, dim_station
+tests/test_cache.py                      unit: TTL cache behavior
+tests/test_generator_reproducibility.py  unit: deterministic row counts
+tests/test_row_counts.py                 db:   loaded table counts, value bounds
+tests/test_foreign_keys.py               db:   no orphan FK references
+tests/test_api_contracts.py              db:   typed responses, health, cache headers
+tests/test_validation_endpoint.py        db:   integrity checks pass, real view DDL
 ```
 
-The tests regenerate the synthetic dataset, load PostgreSQL, apply analytical
-views, and verify:
+The integration tier regenerates the dataset, loads PostgreSQL, applies the
+analytical views, and verifies deterministic counts, referential integrity
+(including the new `dim_station` foreign keys), value bounds, typed API
+responses, honest health behavior, Cache-Control headers, and that
+`/api/methodology/validation` reports PASS.
 
-* deterministic row counts from the seeded generator
-* no orphan asset IDs
-* no orphan shift links
-* no negative production values or invalid yield values
-* expected API JSON keys
-* `/api/methodology/validation` reports PASS for integrity checks
-* `/docs` and `/openapi.json` are available
-
-GitHub Actions runs backend tests against PostgreSQL and builds the Cloudflare
-frontend on every push and pull request.
+GitHub Actions runs three jobs on every push and pull request: **unit** (ruff
+lint + `pytest -m "not db"`), **integration** (full suite vs `postgres:16`),
+and **frontend** (`tsc --noEmit`, Vitest, and the static build).
 
 Run locally:
 
 ```bash
-pip install -r backend/requirements.txt pytest psycopg2-binary numpy pandas httpx
+pip install -r backend/requirements.txt pytest psycopg2-binary numpy pandas httpx ruff
+
+# fast unit tests, no database:
+pytest -q -m "not db"
+ruff check .
+
+# full suite (needs PostgreSQL):
 export DATABASE_URL=postgresql://localhost:5432/manufacturing
 pytest -q
+
+# frontend:
+cd frontend && npm ci && npm run typecheck && npm test
 ```
 
 ## Deployment model
@@ -360,10 +396,15 @@ generator/generate_factory_data.py
 * numpy
 * PostgreSQL
 * FastAPI
+* Pydantic
 * asyncpg
 * Next.js 14
 * TypeScript
 * Recharts
+* pytest
+* ruff
+* Vitest + React Testing Library
+* Docker Compose
 * nginx
 * systemd
 * Cloudflare Pages
