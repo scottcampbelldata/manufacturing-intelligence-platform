@@ -9,11 +9,21 @@ replacement planning.
 
 ```mermaid
 erDiagram
+    dim_station ||--o{ dim_asset : station
+    dim_station ||--o{ fact_fault_events : station
+    dim_station ||--o{ fact_defect_events : root_cause_station
+    dim_station ||--o{ fact_defect_events : detected_station
     dim_asset ||--o{ fact_fault_events : asset_id
     dim_asset ||--o{ fact_maintenance_events : asset_id
     dim_shift_calendar ||--o{ fact_fault_events : shift_id
     dim_shift_calendar ||--o{ fact_production : shift_id
     dim_shift_calendar ||--o{ shift_logs : shift_id
+    dim_station {
+      text station_id PK
+      text station_name
+      int station_order
+      text station_type
+    }
     dim_events {
       text event_date
       text end_date
@@ -80,6 +90,32 @@ erDiagram
 ```
 
 ## Tables
+
+### `dim_station`
+
+Purpose: station dimension for the eight assembly stations, in physical process
+order.
+
+Primary key: `station_id`
+
+Important columns:
+
+- `station_name`: human-readable name, such as `Robotic Spot Weld`
+- `station_order`: physical position in the line (0-based), used to reason about
+  upstream/downstream defect flow
+- `station_type`: `process` (creates defects) or `inspection` (detects them)
+
+Relationships:
+
+- Referenced by `dim_asset.station`
+- Referenced by `fact_fault_events.station`
+- Referenced by `fact_defect_events.root_cause_station`
+- Referenced by `fact_defect_events.detected_station`
+
+Dashboard sections:
+
+- Loss by station
+- Defect origin vs detection
 
 ### `dim_asset`
 
@@ -199,6 +235,7 @@ Relationships:
 
 - `asset_id` references `dim_asset.asset_id`
 - `shift_id` references `dim_shift_calendar.shift_id`
+- `station` references `dim_station.station_id`
 
 Indexes:
 
@@ -256,6 +293,11 @@ Important columns:
 - `defect_type`
 - `ts`
 
+Relationships:
+
+- `root_cause_station` references `dim_station.station_id`
+- `detected_station` references `dim_station.station_id`
+
 Indexes:
 
 - `idx_defect_root`
@@ -282,11 +324,12 @@ Relationships:
 
 ## Station, Quality, And Process Modeling Notes
 
-The physical schema does not currently include separate `dim_station`,
-`fact_quality_events`, or `fact_process_events` tables.
+The physical schema includes `dim_station` but intentionally omits separate
+`fact_quality_events` or `fact_process_events` tables.
 
-- Station is represented by station-code columns such as `station`,
-  `detected_station`, and `root_cause_station`.
+- Station codes (`station`, `detected_station`, `root_cause_station`) are
+  foreign keys into `dim_station`, so every code is guaranteed to resolve to a
+  named station with a known process/inspection type and line position.
 - Quality events are modeled as individual rows in `fact_defect_events`.
 - Process events are modeled in `dim_events` and validated through analytical
   views such as `v_yield_by_quarter`, `v_defects_monthly`, and event-specific

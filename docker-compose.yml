@@ -11,8 +11,10 @@ services:
       POSTGRES_DB: manufacturing
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    # Loopback-bound: this dev database is reachable only from the developer's
+    # host, never the LAN. Default credentials are acceptable for local-only use.
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - factory-pgdata:/var/lib/postgresql/data
     healthcheck:
