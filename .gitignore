@@ -12,6 +12,11 @@ generator/output/
 node_modules/
 .next/
 out/
+*.tsbuildinfo
+
+# Test / tooling caches
+.pytest_cache/
+.ruff_cache/
 
 # Env / secrets
 .env
