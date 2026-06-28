@@ -143,7 +143,7 @@ export default function Report() {
       <header className="flex flex-wrap items-end justify-between gap-3 pb-1">
         <div>
           <div className="eyebrow mb-1">Operations Analytics Report</div>
-          <h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">
+          <h1 className="font-display text-3xl md:text-4xl font-semibold text-white tracking-tight">
             Automotive Assembly Intelligence
           </h1>
           <p className="text-mute text-base md:text-[1.05rem] mt-2 max-w-3xl leading-relaxed">

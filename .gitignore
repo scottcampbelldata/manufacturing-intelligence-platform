@@ -29,3 +29,7 @@ frontend/.env.local
 Thumbs.db
 .idea/
 .vscode/
+
+# Playwright MCP artifacts
+.playwright-mcp/
+redesign-*.png

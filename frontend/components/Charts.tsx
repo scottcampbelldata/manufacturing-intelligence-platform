@@ -20,22 +20,26 @@ import {
   YieldQuarter,
   SummerThermal,
 } from "@/lib/api";
+import { axisTick, chart, MONO, thermalRamp } from "@/lib/theme";
 
-const AXIS = { fill: "#9aa6bf", fontSize: 12 };
-const GRID = "#243049";
+const AXIS = axisTick;
+const GRID = chart.grid;
 
 function tip(content: any) {
   return (
     <Tooltip
       // Recharts' default hover cursor is a light-gray rectangle, which reads as
       // a white slab on the dark theme. Use a subtle translucent highlight.
-      cursor={{ fill: "rgba(148,163,191,0.10)" }}
+      cursor={{ fill: "rgba(148,163,191,0.08)" }}
       contentStyle={{
-        background: "#0f1729",
-        border: "1px solid #243049",
-        borderRadius: 8,
-        color: "#e6ecf7",
+        background: chart.panel2,
+        border: `1px solid ${chart.edge}`,
+        borderRadius: 10,
+        boxShadow: "0 12px 30px -12px rgba(0,0,0,0.8)",
+        padding: "0.55rem 0.7rem",
       }}
+      labelStyle={{ color: "#fff", fontWeight: 600, marginBottom: 4 }}
+      itemStyle={{ color: chart.text, fontFamily: MONO, fontSize: 12 }}
       {...content}
     />
   );
@@ -50,9 +54,9 @@ export function MttrByCrewChart({ data }: { data: MttrCrew[] }) {
         <XAxis dataKey="crew" tick={AXIS} />
         <YAxis tick={AXIS} unit="m" />
         {tip({})}
-        <Bar dataKey="mttr_min" radius={[6, 6, 0, 0]}>
+        <Bar dataKey="mttr_min" name="MTTR (min)" radius={[6, 6, 0, 0]}>
           {sorted.map((d) => (
-            <Cell key={d.crew} fill={d.crew === "D" ? "#c8472b" : "#5b6bb8"} />
+            <Cell key={d.crew} fill={d.crew === "D" ? chart.signal : chart.steel} />
           ))}
         </Bar>
       </BarChart>
@@ -83,10 +87,10 @@ export function DefectOriginChart({ data }: { data: RootCause[] }) {
         {tip({})}
         <Bar yAxisId="l" dataKey="defects" name="defects (000s)" radius={[6, 6, 0, 0]}>
           {rows.map((r, i) => (
-            <Cell key={i} fill={r.top ? "#c8472b" : "#5b6bb8"} />
+            <Cell key={i} fill={r.top ? chart.signal : chart.steel} />
           ))}
         </Bar>
-        <Line yAxisId="r" dataKey="cumPct" name="cumulative %" stroke="#e6ecf7" strokeWidth={2} dot={{ r: 3 }} />
+        <Line yAxisId="r" dataKey="cumPct" name="cumulative %" stroke={chart.text} strokeWidth={2} dot={{ r: 3, fill: chart.text }} />
       </ComposedChart>
     </ResponsiveContainer>
   );
@@ -94,14 +98,16 @@ export function DefectOriginChart({ data }: { data: RootCause[] }) {
 
 export function YieldTrendChart({ data }: { data: YieldQuarter[] }) {
   const rows = data.map((d) => ({ ...d, q: d.qtr.slice(0, 7) }));
-  const events: { q: string; label: string }[] = [
-    { q: "2024-04", label: "weld retooling" },
-    { q: "2024-10", label: "bad batch" },
-    { q: "2025-01", label: "model-year launch" },
+  // row staggers the label height; anchor points it away from its neighbour so
+  // the close-together Oct-2024 / Jan-2025 events never collide.
+  const events: { q: string; label: string; row: number; anchor: "start" | "end" }[] = [
+    { q: "2024-04", label: "weld retooling", row: 0, anchor: "start" },
+    { q: "2024-10", label: "bad batch", row: 1, anchor: "end" },
+    { q: "2025-01", label: "model-year launch", row: 0, anchor: "start" },
   ];
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={rows} margin={{ top: 20, right: 20, left: -10, bottom: 0 }}>
+      <LineChart data={rows} margin={{ top: 28, right: 20, left: -10, bottom: 0 }}>
         <CartesianGrid stroke={GRID} vertical={false} />
         <XAxis dataKey="q" tick={AXIS} />
         <YAxis tick={AXIS} unit="%" domain={["auto", "auto"]} />
@@ -110,12 +116,22 @@ export function YieldTrendChart({ data }: { data: YieldQuarter[] }) {
           <ReferenceLine
             key={e.q}
             x={e.q}
-            stroke="#c8472b"
+            stroke={chart.signal}
             strokeDasharray="4 4"
-            label={{ value: e.label, fill: "#c8472b", fontSize: 11, position: "insideTopRight", angle: 0 }}
+            label={({ viewBox }: any) => (
+              <text
+                x={e.anchor === "end" ? viewBox.x - 6 : viewBox.x + 6}
+                y={viewBox.y + 12 + e.row * 15}
+                fill={chart.signal}
+                fontSize={11}
+                textAnchor={e.anchor}
+              >
+                {e.label}
+              </text>
+            )}
           />
         ))}
-        <Line dataKey="avg_yield" name="avg yield" stroke="#e6ecf7" strokeWidth={2.5} dot={{ r: 3 }} />
+        <Line dataKey="avg_yield" name="avg yield" stroke={chart.text} strokeWidth={2.5} dot={{ r: 3, fill: chart.text }} />
       </LineChart>
     </ResponsiveContainer>
   );
@@ -123,7 +139,7 @@ export function YieldTrendChart({ data }: { data: YieldQuarter[] }) {
 
 export function SummerSeverityChart({ data }: { data: SummerThermal[] }) {
   const rows = data.map((d) => ({ yr: String(d.yr), n: d.thermal_faults }));
-  const palette = ["#5b6bb8", "#2f7d5b", "#c8472b"];
+  const palette = thermalRamp;
   return (
     <ResponsiveContainer width="100%" height={260}>
       <BarChart data={rows} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>

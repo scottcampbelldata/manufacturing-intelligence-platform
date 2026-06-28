@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { StationLoss, ReplaceCandidate, ValidationCheck, Provenance } from "@/lib/api";
+import { chart } from "@/lib/theme";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "https://factory-api.scottcampbell.io";
 const REPO_BASE = "https://github.com/scottcampbelldata/manufacturing-intelligence-platform";
@@ -38,7 +39,7 @@ export function LossByStation({ data }: { data: StationLoss[] }) {
               className="h-full"
               style={{
                 width: `${(d.downtime_idx / max) * 100 * 0.5}%`,
-                background: "#5b7cc8",
+                background: chart.steel,
               }}
               title="downtime"
             />
@@ -46,7 +47,7 @@ export function LossByStation({ data }: { data: StationLoss[] }) {
               className="h-full"
               style={{
                 width: `${(d.scrap_idx / max) * 100 * 0.5}%`,
-                background: "#e0653f",
+                background: chart.signal,
               }}
               title="scrap"
             />
@@ -55,11 +56,11 @@ export function LossByStation({ data }: { data: StationLoss[] }) {
       ))}
       <div className="flex gap-4 text-xs text-faint pt-1">
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ background: "#5b7cc8" }} />
+          <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ background: chart.steel }} />
           downtime hours
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ background: "#e0653f" }} />
+          <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ background: chart.signal }} />
           scrap units
         </span>
       </div>
