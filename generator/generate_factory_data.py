@@ -41,6 +41,7 @@ Outputs (CSV) into ./output:
 Author: Scott Campbell Consulting LLC  (portfolio synthetic data)
 """
 
+import argparse
 import math
 import os
 from datetime import date, datetime, timedelta
@@ -171,55 +172,55 @@ REPLACE_MIN_DATE = START + timedelta(days=210)
 # --------------------------------------------------------------------------
 # Seasonal / event helper functions
 # --------------------------------------------------------------------------
-def summer_signal(ts):
+def summer_signal(ts: datetime) -> float:
     doy = ts.timetuple().tm_yday
     return math.cos(2 * math.pi * (doy - 200) / 365.0)   # +1 mid-Jul, -1 mid-Jan
 
-def season_severity(ts):
+def season_severity(ts: datetime) -> float:
     if summer_signal(ts) >= 0:
         return SUMMER_SEVERITY.get(ts.year, 1.0)
     wkey = ts.year + 1 if ts.month == 12 else ts.year
     return WINTER_SEVERITY.get(wkey, 1.0)
 
-def seasonal_fault_factor(ts):
+def seasonal_fault_factor(ts: datetime) -> float:
     """<1 => shorter interval => more faults. Severity scales the swing."""
     d = summer_signal(ts)
     amp = season_severity(ts)
     return 1.0 - 0.12 * d * amp
 
-def acute_fault_mult(ts, code):
+def acute_fault_mult(ts: datetime, code: str) -> float:
     d = ts.date()
     m = 1.0
-    for start, end, scope, fmult, dmult, label in ACUTE_EVENTS:
+    for start, end, scope, fmult, _dmult, _label in ACUTE_EVENTS:
         if start <= d <= end and fmult != 1.0:
             if scope == "all" or (scope == "thermal" and code in THERMAL_CODES) \
                or (scope == "mechanical" and code in MECHANICAL_CODES):
                 m *= fmult
     return m
 
-def reliability_program_mult(ts, code):
+def reliability_program_mult(ts: datetime, code: str) -> float:
     if ts.date() >= RELIABILITY_PROGRAM_DATE and code in MECHANICAL_CODES:
         return RELIABILITY_PROGRAM_MULT
     return 1.0
 
-def acute_defect_mult(ts, station):
+def acute_defect_mult(ts: datetime, station: str) -> float:
     d = ts.date()
     m = 1.0
-    for start, end, scope, fmult, dmult, label in ACUTE_EVENTS:
+    for start, end, _scope, _fmult, dmult, label in ACUTE_EVENTS:
         if start <= d <= end and dmult != 1.0:
             if ACUTE_DEFECT_STATION.get(label) == station:
                 m *= dmult
     return m
 
-def process_defect_mult(ts, station):
+def process_defect_mult(ts: datetime, station: str) -> float:
     d = ts.date()
     m = 1.0
-    for cdate, cstation, cmult, label in PROCESS_CHANGES:
+    for cdate, cstation, cmult, _label in PROCESS_CHANGES:
         if d >= cdate and cstation == station:
             m *= cmult
     return m
 
-def new_product_defect_mult(ts, station):
+def new_product_defect_mult(ts: datetime, station: str) -> float:
     d = ts.date()
     if d >= NEW_PRODUCT_DATE and station in NEW_PRODUCT_STATIONS:
         elapsed = (d - NEW_PRODUCT_DATE).days
@@ -228,11 +229,11 @@ def new_product_defect_mult(ts, station):
             return 1.0 + (NEW_PRODUCT_PEAK_MULT - 1.0) * frac
     return 1.0
 
-def ci_factor(ts):
+def ci_factor(ts: datetime) -> float:
     frac = (ts - START).days / DAYS
     return CI_START_MULT + (CI_END_MULT - CI_START_MULT) * frac
 
-def demand_factor(ts):
+def demand_factor(ts: datetime) -> float:
     yrs = (ts - START).days / 365.0
     f = (1.0 + DEMAND_GROWTH_PER_YEAR) ** yrs
     # new-product throughput ramp (lower at intro, recovers)
@@ -249,6 +250,24 @@ def demand_factor(ts):
     if s > 0:
         f *= 1.0 - 0.03 * s * season_severity(ts)
     return f
+
+# --------------------------------------------------------------------------
+# 0. STATION DIMENSION
+# --------------------------------------------------------------------------
+# ST01-ST06 are process stations (they create defects); ST07-ST08 are the
+# inspection points (they detect defects that originated upstream).
+INSPECTION_STATIONS = {"ST07", "ST08"}
+
+def build_stations() -> pd.DataFrame:
+    rows = []
+    for order, (sid, name) in enumerate(STATIONS):
+        rows.append(dict(
+            station_id=sid,
+            station_name=name,
+            station_order=order,
+            station_type="inspection" if sid in INSPECTION_STATIONS else "process",
+        ))
+    return pd.DataFrame(rows)
 
 # --------------------------------------------------------------------------
 # 1. ASSETS
@@ -390,8 +409,6 @@ def build_faults(assets, cal):
             # extra faults during an acute spike (bonus>1): emit follow-ons
             extra = int(bonus) - 1
             for _ in range(max(0, extra)):
-                if rng.random() < (bonus - int(bonus)) + 0.0:
-                    pass
                 fault_rows.append(dict(
                     fault_id=f"F{fault_seq:06d}", asset_id=asset_id,
                     asset_class=cls, line=st["line"], station=st["station"],
@@ -421,7 +438,7 @@ def build_faults(assets, cal):
                 replace_threshold = int(rng.integers(20, 30))
 
     # scheduled preventive maintenance (PM) -- one stream per asset
-    for asset_id, st in asset_state.items():
+    for asset_id in asset_state:
         t = START + timedelta(days=float(rng.integers(5, 45)))
         while t < END:
             sid, crew, stype = lookup(t)
@@ -472,7 +489,9 @@ def build_production_and_defects(assets, faults, cal):
     defect_seq = 0
 
     for _, shift in cal.iterrows():
-        t = shift["start"]; crew = shift["crew"]; stype = shift["shift_type"]
+        t = shift["start"]
+        crew = shift["crew"]
+        stype = shift["shift_type"]
         fault_mult = CREW_SKILL[crew]["fault"]
         while t < shift["end"]:
             hour = t
@@ -534,10 +553,14 @@ def build_production_and_defects(assets, faults, cal):
 
                     for k in range(n_def):
                         d_id.append(f"D{defect_seq:08d}")
-                        d_ts.append(hour); d_line.append(line)
-                        d_det.append(det[k]); d_root.append(roots[k])
-                        d_crew.append(crew); d_stype.append(stype)
-                        d_type.append(types[k]); defect_seq += 1
+                        d_ts.append(hour)
+                        d_line.append(line)
+                        d_det.append(det[k])
+                        d_root.append(roots[k])
+                        d_crew.append(crew)
+                        d_stype.append(stype)
+                        d_type.append(types[k])
+                        defect_seq += 1
 
                 prod_rows.append(dict(
                     ts=hour, line=line, shift_id=shift["shift_id"], crew=crew,
@@ -579,7 +602,9 @@ def build_shift_logs(cal, faults):
     f_by_shift = faults.groupby("shift_id")
     groups = f_by_shift.groups
     for _, shift in cal.iterrows():
-        sid = shift["shift_id"]; crew = shift["crew"]; stype = shift["shift_type"]
+        sid = shift["shift_id"]
+        crew = shift["crew"]
+        stype = shift["shift_type"]
         n_lines = rng.integers(1, 4) if stype == "night" else rng.integers(2, 6)
         sf = f_by_shift.get_group(sid) if sid in groups else None
         for _ in range(int(n_lines)):
@@ -604,7 +629,7 @@ def build_shift_logs(cal, faults):
 # --------------------------------------------------------------------------
 def build_events():
     rows = []
-    for start, end, scope, fmult, dmult, label in ACUTE_EVENTS:
+    for start, end, _scope, _fmult, _dmult, label in ACUTE_EVENTS:
         rows.append(dict(event_date=start, end_date=end, category="acute",
                          detail=label))
     for cdate, cstation, cmult, label in PROCESS_CHANGES:
@@ -622,10 +647,29 @@ def build_events():
 # --------------------------------------------------------------------------
 # RUN
 # --------------------------------------------------------------------------
-if __name__ == "__main__":
-    print("Building assets..."); assets = build_assets()
+def main(seed: int = SEED, out: str = OUT, days: int = DAYS) -> None:
+    """Generate the full synthetic dataset and write the CSVs.
+
+    Defaults reproduce the canonical seeded dataset (seed=1970, 1095 days).
+    Overriding ``seed``/``days`` produces a different but still deterministic
+    dataset for experimentation.
+    """
+    global rng, OUT, DAYS, END
+    rng = np.random.default_rng(seed)
+    OUT = out
+    DAYS = days
+    END = START + timedelta(days=DAYS)
+    os.makedirs(OUT, exist_ok=True)
+
+    print(f"Seed {seed} | {DAYS} days | output -> {OUT}/")
+    print("Building station dimension...")
+    stations = build_stations()
+    print(f"  {len(stations)} stations")
+    print("Building assets...")
+    assets = build_assets()
     print(f"  {len(assets)} assets")
-    print("Building 3-year shift calendar..."); cal = build_shift_calendar()
+    print("Building 3-year shift calendar...")
+    cal = build_shift_calendar()
     print(f"  {len(cal)} shifts")
     print("Simulating faults (aging + seasonality + acute + replacements + PM)...")
     faults, maint, n_repl = build_faults(assets, cal)
@@ -634,10 +678,12 @@ if __name__ == "__main__":
     print("Simulating production + EVERY defect (full fidelity)...")
     prod, defects = build_production_and_defects(assets, faults, cal)
     print(f"  {len(prod)} line-hours | {len(defects)} defect records")
-    print("Generating messy shift logs..."); logs = build_shift_logs(cal, faults)
+    print("Generating messy shift logs...")
+    logs = build_shift_logs(cal, faults)
     print(f"  {len(logs)} log entries")
     events = build_events()
 
+    stations.to_csv(f"{OUT}/dim_station.csv", index=False)
     assets.to_csv(f"{OUT}/dim_asset.csv", index=False)
     cal.to_csv(f"{OUT}/dim_shift_calendar.csv", index=False)
     events.to_csv(f"{OUT}/dim_events.csv", index=False)
@@ -647,4 +693,20 @@ if __name__ == "__main__":
     defects.to_csv(f"{OUT}/fact_defect_events.csv", index=False)
     maint.to_csv(f"{OUT}/fact_maintenance_events.csv", index=False)
     logs.to_csv(f"{OUT}/shift_logs.csv", index=False)
-    print("\nDone. Files in ./output")
+    print(f"\nDone. Files in ./{OUT}")
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--seed", type=int, default=SEED,
+                   help=f"RNG seed (default {SEED}; reproduces the canonical dataset)")
+    p.add_argument("--out", type=str, default=OUT,
+                   help=f"output directory for CSVs (default {OUT})")
+    p.add_argument("--days", type=int, default=DAYS,
+                   help=f"number of days to simulate (default {DAYS})")
+    return p.parse_args(argv)
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    main(seed=args.seed, out=args.out, days=args.days)
