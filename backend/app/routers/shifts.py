@@ -1,7 +1,7 @@
 """Shift analysis endpoints -- the 'invisible night shift' (page 2)."""
 from fastapi import APIRouter
 
-from ..db import fetch_all
+from ..cache import cached_fetch_all as fetch_all
 from ..schemas import Handoff, MttrCrew, YieldShift
 
 router = APIRouter(prefix="/api/shifts", tags=["shifts"])

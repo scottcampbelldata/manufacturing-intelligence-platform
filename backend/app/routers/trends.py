@@ -1,7 +1,7 @@
 """Trends & event-rediscovery endpoints (page 5)."""
 from fastapi import APIRouter, Query
 
-from ..db import fetch_all
+from ..cache import cached_fetch_all as fetch_all
 from ..schemas import DefectsMonthly, FactoryEvent, YieldQuarter
 
 router = APIRouter(prefix="/api/trends", tags=["trends"])

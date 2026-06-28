@@ -1,7 +1,8 @@
 """Executive layer -- OEE and the loss view (page 1)."""
 from fastapi import APIRouter
 
-from ..db import fetch_all, fetch_one
+from ..cache import cached_fetch_all as fetch_all
+from ..cache import cached_fetch_one as fetch_one
 from ..schemas import Oee, OeeLine, StationLoss
 
 router = APIRouter(prefix="/api/exec", tags=["exec"])

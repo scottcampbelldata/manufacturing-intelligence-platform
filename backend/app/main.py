@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from . import db
-from .config import CORS_ORIGINS, DATASET_SEED, SCHEMA_VERSION
+from .config import CACHE_TTL_SECONDS, CORS_ORIGINS, DATASET_SEED, SCHEMA_VERSION
 from .logging_config import configure_logging
 from .routers import exec, kpi, methodology, quality, reliability, shifts, trends
 from .schemas import Health, SystemStatus
@@ -47,6 +47,23 @@ app.add_middleware(
     allow_methods=["GET"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def cache_control(request: Request, call_next):
+    """Let browsers/CDN cache the static analytical data, but never the
+    health/readiness endpoints (whose whole point is to reflect live state)."""
+    response = await call_next(request)
+    path = request.url.path
+    if (
+        request.method == "GET"
+        and path.startswith("/api/")
+        and path != "/api/system"
+    ):
+        response.headers.setdefault(
+            "Cache-Control", f"public, max-age={CACHE_TTL_SECONDS}"
+        )
+    return response
 
 app.include_router(kpi.router)
 app.include_router(exec.router)

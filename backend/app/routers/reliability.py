@@ -1,7 +1,7 @@
 """Reliability & equipment-lifecycle endpoints (page 4)."""
 from fastapi import APIRouter, Query
 
-from ..db import fetch_all
+from ..cache import cached_fetch_all as fetch_all
 from ..schemas import (
     FaultsByQuarter,
     FaultsPerGeneration,
