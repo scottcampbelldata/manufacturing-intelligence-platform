@@ -7,12 +7,6 @@ from ..schemas import Oee, OeeLine, StationLoss
 
 router = APIRouter(prefix="/api/exec", tags=["exec"])
 
-STATION_NAMES = {
-    "ST01": "Stamping", "ST02": "Body Framing", "ST03": "Robotic Spot Weld",
-    "ST04": "Paint", "ST05": "Trim", "ST06": "Final Assembly",
-    "ST07": "Final Inspection", "ST08": "Roll & Brake Test",
-}
-
 
 @router.get("/oee", response_model=Oee)
 async def oee():
@@ -31,7 +25,7 @@ async def loss_by_station():
     rows = await fetch_all(
         "SELECT * FROM v_loss_by_station ORDER BY (downtime_idx + scrap_idx) DESC"
     )
-    for r in rows:
-        r["station_name"] = STATION_NAMES.get(r["station"], r["station"])
-        r["loss_index"] = round((r["downtime_idx"] or 0) + (r["scrap_idx"] or 0))
-    return rows
+    return [
+        {**r, "loss_index": round((r["downtime_idx"] or 0) + (r["scrap_idx"] or 0))}
+        for r in rows
+    ]

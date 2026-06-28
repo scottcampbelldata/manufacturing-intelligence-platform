@@ -29,17 +29,19 @@ PROVENANCE = {
     ),
 }
 
-# The view definitions backing each dashboard section (shown in the UI).
-VIEW_SQL = {
-    "OEE": "SELECT 100*(planned_time-downtime)/planned_time AS availability, "
-           "100*good/produced AS quality, ... FROM fact_production  (see v_oee)",
-    "Loss by station": "downtime hours by faulting-asset station FULL JOIN "
-                       "scrap units by root_cause_station  (see v_loss_by_station)",
-    "Root cause vs detection": "COUNT(*) GROUP BY root_cause_station vs "
-                               "detected_station  (see v_rootcause_ranking / v_propagation)",
-    "Replacement candidates": "faults this year vs last per robot, trend flag "
-                              "(see v_robot_candidates)",
-}
+# Backing views shown on the methodology panel. The actual DDL is read from the
+# database at request time via pg_get_viewdef, so the "logic" shown to reviewers
+# is the real SQL the dashboard runs -- not a hand-written summary that can drift.
+BACKING_VIEWS = [
+    ("Executive KPIs", "v_kpi_overall"),
+    ("OEE", "v_oee"),
+    ("Loss by station", "v_loss_by_station"),
+    ("MTTR by crew", "v_mttr_by_crew"),
+    ("Root-cause ranking", "v_rootcause_ranking"),
+    ("Defect propagation", "v_propagation"),
+    ("Replacement candidates", "v_robot_candidates"),
+    ("Validation checks", "v_validation"),
+]
 
 
 @router.get("/validation", response_model=list[ValidationCheck])
@@ -55,7 +57,14 @@ async def provenance():
 
 @router.get("/views", response_model=list[ViewLogic])
 async def views():
-    return [{"section": k, "logic": v} for k, v in VIEW_SQL.items()]
+    """Real SQL DDL for each backing view, read live from the database."""
+    out = []
+    for section, view in BACKING_VIEWS:
+        rows = await fetch_all(
+            "SELECT pg_get_viewdef($1::regclass, true) AS logic", view
+        )
+        out.append({"section": section, "logic": rows[0]["logic"] if rows else ""})
+    return out
 
 
 @router.get("", response_model=Methodology)

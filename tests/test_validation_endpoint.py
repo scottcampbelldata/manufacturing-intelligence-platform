@@ -17,9 +17,28 @@ def test_validation_endpoint_reports_expected_passes(loaded_db, monkeypatch):
         "orphan production (shift FK)",
         "yield reconciliation mismatches",
         "null downtime on faults",
+        "orphan defect root stations",
+        "orphan defect detected stations",
     ]
     for check_name in expected_passes:
         assert rows[check_name]["status"] == "pass"
 
-    assert rows["fact_defect_events rows"]["value"] == "726793"
+    assert rows["fact_defect_events rows"]["value"] == "725519"
     assert rows["fact_production rows"]["value"] == "78912"
+
+
+def test_views_endpoint_returns_real_sql(loaded_db, monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", loaded_db)
+
+    from backend.app.main import app
+
+    with TestClient(app) as client:
+        response = client.get("/api/methodology/views")
+
+    assert response.status_code == 200
+    items = response.json()
+    assert items, "expected backing-view definitions"
+    for item in items:
+        # Real DDL read from pg_get_viewdef -- not a hand-written "..." summary.
+        assert "SELECT" in item["logic"].upper()
+        assert "..." not in item["logic"]
