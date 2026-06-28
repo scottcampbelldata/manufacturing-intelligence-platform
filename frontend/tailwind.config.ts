@@ -14,6 +14,7 @@ const config: Config = {
         "edge-soft": "var(--edge-soft)",
         ink: "var(--ink)",
         text: "var(--text)",
+        strong: "var(--strong)",
         mute: "var(--mute)",
         faint: "var(--faint)",
         steel: "var(--steel)",

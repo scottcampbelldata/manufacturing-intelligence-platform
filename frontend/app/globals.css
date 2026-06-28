@@ -4,27 +4,72 @@
 
 /* =====================================================================
    Tokens — instrument-cluster / plant control-room identity.
-   Graphite ground, STEEL for baseline data, AMBER (accent) for the insight,
-   GOOD/DANGER reserved for pass-fail and heat. Single source of truth;
-   Tailwind colors reference these variables.
+   STEEL for baseline data, AMBER (accent) for the insight, GOOD/DANGER
+   reserved for pass-fail and heat. Single source of truth; Tailwind colors
+   reference these variables.
+
+   Two grounds, one language:
+   - Light (default) — "engineering paper": warm drafting-paper ground,
+     graphite ink, steel-blue data, amber insight. Reads like a spec sheet.
+   - Dark — the original graphite control-room ground (data-theme="dark").
+   Theme-dependent literals (shadows, surface sheen, overhead glow, hover,
+   backdrop) are variables too, so both grounds stay coherent.
    ===================================================================== */
 :root {
+  color-scheme: light;
+  --bg: #f6f4ef; /* warm drafting paper */
+  --panel: #ffffff;
+  --panel-2: #f1ede5;
+  --edge: #dad4c8;
+  --edge-soft: #e7e2d8;
+  --ink: #1a1f26; /* graphite — primary text */
+  --text: #1a1f26;
+  --strong: #11151b; /* headings / readouts — maximum contrast */
+  --mute: #50586a;
+  --faint: #6b7280;
+  --steel: #4e6e94; /* baseline data */
+  --accent: #c77d1a; /* amber — the insight / attention (darkened for paper) */
+  --accent-soft: #e0a23f;
+  --good: #2f8f66;
+  --danger: #c23b33;
+  --blue: #4e6e94; /* legacy alias -> steel */
+
+  /* theme-dependent surface treatment */
+  --glow: #ffffff; /* soft overhead light on the paper */
+  --sheen: rgba(255, 255, 255, 0); /* white cards need no top sheen */
+  --shadow-card: 0 1px 2px rgba(26, 31, 38, 0.05),
+    0 16px 30px -22px rgba(26, 31, 38, 0.3);
+  --shadow-modal: 0 28px 70px -20px rgba(26, 31, 38, 0.3);
+  --hover: #f3efe7;
+  --backdrop: rgba(34, 38, 46, 0.35);
+}
+
+[data-theme="dark"] {
   color-scheme: dark;
   --bg: #0c0f14;
   --panel: #141922;
   --panel-2: #1a2029;
   --edge: #2a323d;
   --edge-soft: #20272f;
-  --ink: #eaeef4; /* primary text */
+  --ink: #eaeef4;
   --text: #eaeef4;
+  --strong: #ffffff;
   --mute: #98a4b3;
   --faint: #67727f;
-  --steel: #6f8aab; /* baseline data */
-  --accent: #f2a93b; /* amber — the insight / attention */
+  --steel: #6f8aab;
+  --accent: #f2a93b;
   --accent-soft: #f7c476;
   --good: #4fb286;
   --danger: #e5544b;
-  --blue: #6f8aab; /* legacy alias -> steel */
+  --blue: #6f8aab;
+
+  --glow: #171d27;
+  --sheen: rgba(255, 255, 255, 0.025);
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.025) inset,
+    0 14px 32px -20px rgba(0, 0, 0, 0.8);
+  --shadow-modal: 0 24px 70px rgba(0, 0, 0, 0.6);
+  --hover: #1f2630;
+  --backdrop: rgba(4, 6, 10, 0.8);
 }
 
 * {
@@ -33,14 +78,40 @@
 }
 
 body {
-  /* Neutral graphite with a single soft overhead light — no blue cast. */
+  /* A single soft overhead light over the ground — no blue cast. */
   background:
-    radial-gradient(1200px 620px at 50% -12%, #171d27 0%, rgba(12, 15, 20, 0) 62%),
+    radial-gradient(1200px 620px at 50% -12%, var(--glow) 0%, transparent 62%),
     var(--bg);
   color: var(--ink);
   min-height: 100vh;
   letter-spacing: -0.01em;
   font-feature-settings: "ss01", "cv01";
+}
+
+/* Ease the ground between themes; charts repaint themselves on toggle. */
+body,
+.card,
+.kpi,
+.badge,
+.proof-item,
+.proof-link,
+.architecture-strip,
+.modal-panel,
+table.data td,
+table.data tr + tr td {
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Mono numerals everywhere figures appear — the instrument-readout signature. */
@@ -58,14 +129,12 @@ h1,
 .card {
   position: relative;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0) 40%),
+    linear-gradient(180deg, var(--sheen), transparent 40%),
     var(--panel);
   border: 1px solid var(--edge);
   border-radius: 14px;
   padding: 1.35rem 1.45rem;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.025) inset,
-    0 14px 32px -20px rgba(0, 0, 0, 0.8);
+  box-shadow: var(--shadow-card);
 }
 
 .eyebrow {
@@ -81,7 +150,7 @@ h1,
   font-family: var(--font-display), var(--font-sans), sans-serif;
   font-size: 1.12rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--strong);
   letter-spacing: -0.01em;
 }
 
@@ -97,7 +166,7 @@ h1,
   position: relative;
   overflow: hidden;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0) 45%),
+    linear-gradient(180deg, var(--sheen), transparent 45%),
     var(--panel);
   border: 1px solid var(--edge);
   border-radius: 12px;
@@ -118,7 +187,7 @@ h1,
   font-variant-numeric: tabular-nums;
   font-size: 1.7rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--strong);
   letter-spacing: -0.02em;
   line-height: 1.1;
 }
@@ -255,8 +324,8 @@ table.data tr + tr td { border-top: 1px solid var(--edge-soft); }
 }
 
 .proof-link:hover {
-  border-color: rgba(242, 169, 59, 0.5);
-  background: #1f2630;
+  border-color: var(--accent);
+  background: var(--hover);
   transform: translateY(-1px);
 }
 
@@ -267,7 +336,7 @@ table.data tr + tr td { border-top: 1px solid var(--edge-soft); }
   display: grid;
   place-items: center;
   padding: 1rem;
-  background: rgba(4, 6, 10, 0.8);
+  background: var(--backdrop);
   backdrop-filter: blur(6px);
 }
 
@@ -276,10 +345,10 @@ table.data tr + tr td { border-top: 1px solid var(--edge-soft); }
   border: 1px solid var(--edge);
   border-radius: 14px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0) 42%),
+    linear-gradient(180deg, var(--sheen), transparent 42%),
     var(--panel);
   padding: 1.25rem;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--shadow-modal);
 }
 
 .modal-close {
@@ -293,7 +362,32 @@ table.data tr + tr td { border-top: 1px solid var(--edge-soft); }
 
 .modal-close:hover {
   color: var(--ink);
-  border-color: rgba(242, 169, 59, 0.5);
+  border-color: var(--accent);
+}
+
+/* Theme toggle — a small instrument switch in the header. */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  background: var(--panel-2);
+  color: var(--mute);
+  transition:
+    color 140ms ease,
+    border-color 140ms ease,
+    background 140ms ease;
+}
+.theme-toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .architecture-modal-flow {
