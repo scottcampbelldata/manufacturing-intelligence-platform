@@ -1,5 +1,6 @@
 """Methodology & validation -- proves the data is sound and shows provenance."""
 from fastapi import APIRouter
+
 from ..db import fetch_all
 
 router = APIRouter(prefix="/api/methodology", tags=["methodology"])

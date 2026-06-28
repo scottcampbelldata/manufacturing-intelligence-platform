@@ -1,5 +1,6 @@
 """Executive layer -- OEE and the loss view (page 1)."""
 from fastapi import APIRouter
+
 from ..db import fetch_all, fetch_one
 
 router = APIRouter(prefix="/api/exec", tags=["exec"])

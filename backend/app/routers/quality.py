@@ -1,5 +1,6 @@
 """Quality & root-cause endpoints (page 3)."""
 from fastapi import APIRouter
+
 from ..db import fetch_all, fetch_one
 
 router = APIRouter(prefix="/api/quality", tags=["quality"])
