@@ -4,6 +4,16 @@
 --   psql "$DATABASE_URL" -f db/analytical_views.sql
 -- Every dashboard page is backed by one of these views.
 
+-- Drop first so the script is idempotent even when a view's column set changes
+-- (CREATE OR REPLACE cannot reorder or insert columns on an existing view).
+DROP VIEW IF EXISTS
+    v_kpi_overall, v_mttr_by_crew, v_shift_handoff_effect, v_yield_by_shift,
+    v_rootcause_ranking, v_propagation, v_propagation_paths, v_detection_ranking,
+    v_top_faulting_assets, v_faults_per_generation, v_faults_by_quarter,
+    v_yield_by_quarter, v_st03_monthly, v_st06_monthly, v_summer_thermal,
+    v_defects_monthly, v_oee, v_oee_by_line, v_loss_by_station,
+    v_robot_candidates, v_validation CASCADE;
+
 -- Executive KPIs -------------------------------------------------------------
 CREATE OR REPLACE VIEW v_kpi_overall AS
 SELECT
@@ -44,11 +54,11 @@ FROM fact_production GROUP BY shift_type;
 
 -- Root cause / propagation ---------------------------------------------------
 CREATE OR REPLACE VIEW v_rootcause_ranking AS
-SELECT root_cause_station,
+SELECT d.root_cause_station, ds.station_name,
        COUNT(*) AS defects_caused,
        ROUND(100.0*COUNT(*)/SUM(COUNT(*)) OVER (),2) AS pct_of_all
-FROM fact_defect_events
-GROUP BY root_cause_station;
+FROM fact_defect_events d JOIN dim_station ds ON ds.station_id = d.root_cause_station
+GROUP BY d.root_cause_station, ds.station_name;
 
 CREATE OR REPLACE VIEW v_propagation AS
 SELECT
@@ -64,11 +74,11 @@ WHERE root_cause_station<>detected_station
 GROUP BY 1,2;
 
 CREATE OR REPLACE VIEW v_detection_ranking AS
-SELECT detected_station,
+SELECT d.detected_station, ds.station_name,
        COUNT(*) AS defects_detected,
        ROUND(100.0*COUNT(*)/SUM(COUNT(*)) OVER (),2) AS pct_of_all
-FROM fact_defect_events
-GROUP BY detected_station;
+FROM fact_defect_events d JOIN dim_station ds ON ds.station_id = d.detected_station
+GROUP BY d.detected_station, ds.station_name;
 
 -- Reliability / equipment lifecycle ------------------------------------------
 CREATE OR REPLACE VIEW v_top_faulting_assets AS
@@ -163,10 +173,10 @@ WITH dt AS (SELECT station, ROUND(SUM(downtime_min)/60,0) downtime_hrs, COUNT(*)
                   COALESCE(downtime_hrs,0) downtime_hrs, COALESCE(faults,0) faults,
                   COALESCE(scrap_units,0) scrap_units
            FROM dt FULL OUTER JOIN sc ON dt.station=sc.station)
-SELECT station, downtime_hrs, faults, scrap_units,
-       ROUND(100.0*downtime_hrs/NULLIF(MAX(downtime_hrs) OVER(),0),0) AS downtime_idx,
-       ROUND(100.0*scrap_units/NULLIF(MAX(scrap_units) OVER(),0),0)   AS scrap_idx
-FROM j;
+SELECT j.station, ds.station_name, j.downtime_hrs, j.faults, j.scrap_units,
+       ROUND(100.0*j.downtime_hrs/NULLIF(MAX(j.downtime_hrs) OVER(),0),0) AS downtime_idx,
+       ROUND(100.0*j.scrap_units/NULLIF(MAX(j.scrap_units) OVER(),0),0)   AS scrap_idx
+FROM j JOIN dim_station ds ON ds.station_id = j.station;
 
 -- RELIABILITY: robot replacement candidates -- faults rising year over year.
 CREATE OR REPLACE VIEW v_robot_candidates AS
@@ -203,5 +213,11 @@ UNION ALL SELECT 8, 'yield reconciliation mismatches',
 UNION ALL SELECT 9, 'null downtime on faults',
   (SELECT COUNT(*) FROM fact_fault_events WHERE downtime_min IS NULL)::text,
   CASE WHEN (SELECT COUNT(*) FROM fact_fault_events WHERE downtime_min IS NULL)=0 THEN 'pass' ELSE 'fail' END
+UNION ALL SELECT 11, 'orphan defect root stations',
+  (SELECT COUNT(*) FROM fact_defect_events d LEFT JOIN dim_station s ON s.station_id=d.root_cause_station WHERE s.station_id IS NULL)::text,
+  CASE WHEN (SELECT COUNT(*) FROM fact_defect_events d LEFT JOIN dim_station s ON s.station_id=d.root_cause_station WHERE s.station_id IS NULL)=0 THEN 'pass' ELSE 'fail' END
+UNION ALL SELECT 12, 'orphan defect detected stations',
+  (SELECT COUNT(*) FROM fact_defect_events d LEFT JOIN dim_station s ON s.station_id=d.detected_station WHERE s.station_id IS NULL)::text,
+  CASE WHEN (SELECT COUNT(*) FROM fact_defect_events d LEFT JOIN dim_station s ON s.station_id=d.detected_station WHERE s.station_id IS NULL)=0 THEN 'pass' ELSE 'fail' END
 UNION ALL SELECT 10,'date range',
   (SELECT MIN(ts)::date || ' to ' || MAX(ts)::date FROM fact_production), 'info';
