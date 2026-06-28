@@ -2,17 +2,18 @@
 from fastapi import APIRouter, Query
 
 from ..db import fetch_all
+from ..schemas import DefectsMonthly, FactoryEvent, YieldQuarter
 
 router = APIRouter(prefix="/api/trends", tags=["trends"])
 
 
-@router.get("/yield-by-quarter")
+@router.get("/yield-by-quarter", response_model=list[YieldQuarter])
 async def yield_by_quarter():
     """Quarterly yield trend (continuous improvement) + planned throughput."""
     return await fetch_all("SELECT * FROM v_yield_by_quarter")
 
 
-@router.get("/defects-monthly")
+@router.get("/defects-monthly", response_model=list[DefectsMonthly])
 async def defects_monthly(station: str | None = Query(None)):
     """Monthly defect counts, optionally filtered to one detected station
     (e.g. station=ST03 to see the laser-upgrade step change)."""
@@ -28,7 +29,7 @@ async def defects_monthly(station: str | None = Query(None)):
     )
 
 
-@router.get("/events")
+@router.get("/events", response_model=list[FactoryEvent])
 async def events():
     """Ground-truth operational events (the rediscovery 'answer key')."""
     return await fetch_all(

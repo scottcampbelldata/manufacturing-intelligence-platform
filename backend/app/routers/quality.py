@@ -2,6 +2,7 @@
 from fastapi import APIRouter
 
 from ..db import fetch_all, fetch_one
+from ..schemas import Detection, Propagation, PropagationPath, RootCause
 
 router = APIRouter(prefix="/api/quality", tags=["quality"])
 
@@ -19,7 +20,7 @@ def _label(rows, key):
     return rows
 
 
-@router.get("/root-cause")
+@router.get("/root-cause", response_model=list[RootCause])
 async def root_cause():
     """Where defects truly originate (root-cause station ranking)."""
     rows = await fetch_all(
@@ -28,7 +29,7 @@ async def root_cause():
     return _label(rows, "root_cause_station")
 
 
-@router.get("/detection")
+@router.get("/detection", response_model=list[Detection])
 async def detection():
     """Where defects are caught (detection-station ranking; QC dominates)."""
     rows = await fetch_all(
@@ -37,13 +38,13 @@ async def detection():
     return _label(rows, "detected_station")
 
 
-@router.get("/propagation")
+@router.get("/propagation", response_model=Propagation)
 async def propagation():
     """Headline: share of defects detected downstream of their origin."""
     return await fetch_one("SELECT * FROM v_propagation")
 
 
-@router.get("/propagation-paths")
+@router.get("/propagation-paths", response_model=list[PropagationPath])
 async def propagation_paths():
     """Top origin -> detection flows."""
     return await fetch_all(
