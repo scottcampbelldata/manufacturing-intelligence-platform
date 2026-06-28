@@ -41,11 +41,11 @@ If you are reviewing this project quickly:
 
 ### The invisible night shift
 
-Night-crew repair time runs about 31 percent longer than the best day crew, with a spike in the 4-5 a.m. handoff window. This is the kind of loss that hides in daily totals and only appears when the data is analyzed at the shift and crew grain.
+Night-crew repair time runs about 30 percent longer than the best day crew, with a spike in the 4-5 a.m. handoff window. This is the kind of loss that hides in daily totals and only appears when the data is analyzed at the shift and crew grain.
 
 ### Detection versus origin
 
-About 69 percent of defects are caught at Final Inspection, but most originate upstream at process stations such as Robotic Spot Weld, Paint, and Final Assembly. The model separates where defects are created from where they are detected.
+About 69 percent of defects are caught downstream of where they were created -- most of them at Final Inspection -- but they originate upstream at process stations such as Robotic Spot Weld, Paint, and Final Assembly. The model separates where defects are created from where they are detected.
 
 ### Event rediscovery
 
@@ -54,7 +54,7 @@ The trend layer independently surfaces operational events from the fact tables:
 * Weld-cell retooling, with spot-weld defects down about 43 percent
 * Supplier fastener bad batch
 * Paint-booth upgrade
-* Preventive-maintenance program, with mechanical faults down about 15 percent
+* Preventive-maintenance program, with mechanical faults stepping down after the start date
 
 These events are not manually labeled in the trend chart. They are validated against a ground-truth events table.
 
@@ -225,14 +225,16 @@ Example system response:
   "status": "ok",
   "service": "factory-api",
   "database": "connected",
-  "schema_version": "2026.06.01",
+  "schema_version": "2026.06.27",
   "dataset_seed": 1970,
+  "db": true,
   "date_min": "2023-01-01",
   "date_max": "2026-01-01",
   "tables": {
+    "dim_station": 8,
     "dim_asset": 157,
-    "fact_fault_events": 8040,
-    "fact_defect_events": 726793,
+    "fact_fault_events": 8088,
+    "fact_defect_events": 725519,
     "fact_production": 78912
   }
 }
