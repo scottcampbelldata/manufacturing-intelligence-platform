@@ -1,7 +1,8 @@
 """Quality & root-cause endpoints (page 3)."""
 from fastapi import APIRouter
 
-from ..db import fetch_all, fetch_one
+from ..cache import cached_fetch_all as fetch_all
+from ..cache import cached_fetch_one as fetch_one
 from ..schemas import Detection, Propagation, PropagationPath, RootCause
 
 router = APIRouter(prefix="/api/quality", tags=["quality"])

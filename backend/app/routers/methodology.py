@@ -1,8 +1,8 @@
 """Methodology & validation -- proves the data is sound and shows provenance."""
 from fastapi import APIRouter
 
+from ..cache import cached_fetch_all as fetch_all
 from ..config import DATASET_SEED
-from ..db import fetch_all
 from ..schemas import Methodology, Provenance, ValidationCheck, ViewLogic
 
 router = APIRouter(prefix="/api/methodology", tags=["methodology"])

@@ -1,7 +1,7 @@
 """Executive KPI endpoints (page 1)."""
 from fastapi import APIRouter
 
-from ..db import fetch_one
+from ..cache import cached_fetch_one as fetch_one
 from ..schemas import Kpi
 
 router = APIRouter(prefix="/api/kpi", tags=["kpi"])

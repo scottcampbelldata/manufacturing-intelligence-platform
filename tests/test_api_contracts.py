@@ -69,6 +69,18 @@ def test_openapi_is_typed(loaded_db, monkeypatch):
         assert "$ref" in kpi_schema
 
 
+def test_cache_control_on_data_but_not_system(loaded_db, monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", loaded_db)
+
+    from backend.app.main import app
+
+    with TestClient(app) as client:
+        kpi = client.get("/api/kpi")
+        assert "max-age" in kpi.headers.get("cache-control", "")
+        system = client.get("/api/system")
+        assert "max-age" not in system.headers.get("cache-control", "")
+
+
 def test_health_is_liveness_only(loaded_db, monkeypatch):
     """/health is a pure liveness probe -- no database fields, no DB query."""
     monkeypatch.setenv("DATABASE_URL", loaded_db)
