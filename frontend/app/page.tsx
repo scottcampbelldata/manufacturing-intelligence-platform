@@ -18,7 +18,9 @@ import {
   ValidationCheck,
   Provenance,
 } from "@/lib/api";
+import { crewGap, risingCount, top3Pct, topLoss } from "@/lib/derive";
 import { Card } from "@/components/Card";
+import { ReportSkeleton } from "@/components/Skeleton";
 import { KpiCards } from "@/components/KpiCards";
 import { OeePanel } from "@/components/Oee";
 import {
@@ -114,26 +116,27 @@ export default function Report() {
   if (err) {
     return (
       <main className="max-w-6xl mx-auto p-8">
-        <p className="text-accent">Failed to reach the API: {err}</p>
-        <p className="text-mute text-sm mt-2">
-          Check NEXT_PUBLIC_API_BASE and that the FastAPI service is running.
-        </p>
+        <Card eyebrow="Connection error" title="Couldn't load the report">
+          <p className="text-mute text-sm leading-relaxed">
+            The dashboard could not reach the analytics API. This is usually
+            transient -- try refreshing in a moment. If it persists, confirm the
+            API service is running and that{" "}
+            <code className="text-faint">NEXT_PUBLIC_API_BASE</code> points to it.
+          </p>
+          <p className="text-faint text-xs mt-3 font-mono break-all">{err}</p>
+        </Card>
       </main>
     );
   }
 
   if (!d) {
-    return <main className="max-w-6xl mx-auto p-8 text-mute">Loading report...</main>;
+    return <ReportSkeleton />;
   }
 
-  const dCrew = [...d.mttr].sort((a, b) => b.mttr_min - a.mttr_min)[0];
-  const aCrew = [...d.mttr].sort((a, b) => a.mttr_min - b.mttr_min)[0];
-  const crewGap = aCrew
-    ? Math.round((100 * (dCrew.mttr_min - aCrew.mttr_min)) / aCrew.mttr_min)
-    : 0;
-  const topLoss = d.loss[0];
-  const top3 = d.rootCause.slice(0, 3).reduce((s, r) => s + r.pct_of_all, 0).toFixed(0);
-  const risingCount = d.candidates.filter((c) => c.trend === "rising").length;
+  const gap = crewGap(d.mttr);
+  const lead = topLoss(d.loss)!;
+  const top3 = top3Pct(d.rootCause);
+  const rising = risingCount(d.candidates);
 
   return (
     <main className="max-w-6xl mx-auto p-6 md:p-8 space-y-7">
@@ -165,9 +168,9 @@ export default function Report() {
       >
         <LossByStation data={d.loss} />
         <Takeaway>
-          {topLoss.station_name} is the largest combined loss source (
-          {topLoss.downtime_hrs.toLocaleString()} downtime hours and{" "}
-          {topLoss.scrap_units.toLocaleString()} scrap units over three years).
+          {lead.station_name} is the largest combined loss source (
+          {lead.downtime_hrs.toLocaleString()} downtime hours and{" "}
+          {lead.scrap_units.toLocaleString()} scrap units over three years).
           Final Inspection shows high downtime but near-zero scrap origin: it
           catches defects, it does not create them, so corrective spend belongs
           on the process stations above it.
@@ -182,7 +185,7 @@ export default function Report() {
         >
           <MttrByCrewChart data={d.mttr} />
           <Takeaway>
-            D-crew (nights) takes {crewGap}% longer to clear the same faults than
+            D-crew (nights) takes {gap}% longer to clear the same faults than
             the best day crew, concentrated in the pre-handoff window. This is a
             staffing and coverage problem, not an equipment problem, and it does
             not show up in daily output totals.
@@ -225,7 +228,7 @@ export default function Report() {
         >
           <ReplaceCandidates data={d.candidates} />
           <Takeaway>
-            {risingCount} of the top contributors show a rising fault rate from
+            {rising} of the top contributors show a rising fault rate from
             2024 to 2025. These are the units to schedule for overhaul or
             replacement before they drive unplanned downtime next year.
           </Takeaway>
