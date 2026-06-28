@@ -41,10 +41,12 @@ Outputs (CSV) into ./output:
 Author: Scott Campbell Consulting LLC  (portfolio synthetic data)
 """
 
+import math
+import os
+from datetime import date, datetime, timedelta
+
 import numpy as np
 import pandas as pd
-from datetime import datetime, timedelta, date
-import math, os
 
 # --------------------------------------------------------------------------
 # CONFIG

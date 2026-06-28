@@ -1,0 +1,25 @@
+# Local PostgreSQL for development — mirrors the CI `postgres:16` service.
+# Usage:
+#   docker compose up -d
+#   export DATABASE_URL=postgresql://postgres:postgres@localhost:5432/manufacturing
+#   make pipeline   # generate -> load -> views
+services:
+  db:
+    image: postgres:16
+    container_name: factory-db
+    environment:
+      POSTGRES_DB: manufacturing
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - factory-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d manufacturing"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  factory-pgdata:

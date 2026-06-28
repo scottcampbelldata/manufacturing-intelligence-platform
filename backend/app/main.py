@@ -6,12 +6,13 @@ Run (dev):  uvicorn app.main:app --reload --port 8000
 Run (prod): via systemd (see deploy/factory-api.service)
 """
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import db
 from .config import CORS_ORIGINS
-from .routers import kpi, exec, shifts, quality, reliability, trends, methodology
+from .routers import exec, kpi, methodology, quality, reliability, shifts, trends
 
 
 @asynccontextmanager

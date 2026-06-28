@@ -1,5 +1,6 @@
 """Trends & event-rediscovery endpoints (page 5)."""
 from fastapi import APIRouter, Query
+
 from ..db import fetch_all
 
 router = APIRouter(prefix="/api/trends", tags=["trends"])

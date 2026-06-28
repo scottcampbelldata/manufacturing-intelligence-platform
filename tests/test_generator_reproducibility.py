@@ -1,6 +1,5 @@
 from conftest import count_csv_rows
 
-
 EXPECTED_ROW_COUNTS = {
     "dim_asset.csv": 157,
     "dim_shift_calendar.csv": 2192,

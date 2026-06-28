@@ -12,6 +12,7 @@ Prereqs:
 """
 import os
 import sys
+
 import psycopg2
 
 DB = os.environ.get("DATABASE_URL")
@@ -63,7 +64,7 @@ def main():
             if not os.path.exists(path):
                 sys.exit(f"Missing {path} -- run the generator first.")
             sql = f"COPY {table} ({cols}) FROM STDIN WITH (FORMAT csv, HEADER true)"
-            with open(path, "r", encoding="utf-8") as fh:
+            with open(path, encoding="utf-8") as fh:
                 cur.copy_expert(sql, fh)
             cur.execute(f"SELECT count(*) FROM {table}")
             print(f"  loaded {table:28s} {cur.fetchone()[0]:>8,} rows")
