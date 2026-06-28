@@ -27,6 +27,9 @@ const GRID = "#243049";
 function tip(content: any) {
   return (
     <Tooltip
+      // Recharts' default hover cursor is a light-gray rectangle, which reads as
+      // a white slab on the dark theme. Use a subtle translucent highlight.
+      cursor={{ fill: "rgba(148,163,191,0.10)" }}
       contentStyle={{
         background: "#0f1729",
         border: "1px solid #243049",
