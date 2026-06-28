@@ -1,7 +1,7 @@
 # Automotive Assembly Intelligence - Report Findings
 
 *Three years of plant telemetry (2023-2025): 35.3M units, 26,304 production hours
-across 3 lines, ~727k defects, ~8k equipment faults. Every figure below traces
+across 3 lines, ~726k defects, ~8.1k equipment faults. Every figure below traces
 to a named SQL view over data that passes the integrity checks on the
 Methodology panel. Fully synthetic, seeded, no proprietary data.*
 
@@ -29,7 +29,7 @@ corrective spend belongs on the process stations upstream (`v_loss_by_station`).
 
 ## The invisible night shift
 
-D-crew (nights) takes ~26-31% longer to clear the *same* faults than the best
+D-crew (nights) takes ~30% longer to clear the *same* faults than the best
 day crew, concentrated in the pre-handoff window. Same equipment, same fault
 mix - the gap is repair speed and coverage, and it never appears in daily output
 totals (`v_mttr_by_crew`, `v_shift_handoff_effect`).
@@ -41,7 +41,7 @@ totals (`v_mttr_by_crew`, `v_shift_handoff_effect`).
 ## Defect origin vs detection
 
 ~69% of defects are caught downstream of where they were created. The top three
-process stations (Spot Weld, Paint, Final Assembly) create ~60% of all scrap,
+process stations (Paint, Final Assembly, Spot Weld) create ~63% of all scrap,
 but most of it surfaces at Final Inspection (`v_rootcause_ranking`,
 `v_propagation`, `v_detection_ranking`).
 
@@ -60,7 +60,7 @@ the fact tables, each matching the ground-truth log:
 | Supplier fastener bad batch (Oct 2024) | Final-assembly defects spike, then recover |
 | New model-year launch (Jan 2025) | Yield dip + recovery on Trim/Final Assembly |
 | Paint-booth upgrade (Sep 2025) | Paint defects step down |
-| PM / reliability program (Sep 2024) | Mechanical faults down ~17%, sustained |
+| PM / reliability program (Sep 2024) | Mechanical faults down ~22% (6 months after vs before) |
 
 > **Decision:** proof a process change moved the number - a step-change, not noise.
 
