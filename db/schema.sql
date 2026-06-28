@@ -5,13 +5,23 @@
 -- =====================================================================
 DROP TABLE IF EXISTS shift_logs, fact_defect_events, fact_production,
     fact_fault_events, fact_maintenance_events, dim_events,
-    dim_shift_calendar, dim_asset CASCADE;
+    dim_shift_calendar, dim_asset, dim_station CASCADE;
+
+-- Station dimension. The 8 assembly stations in physical process order. Process
+-- stations create defects; inspection stations detect them. Referenced by the
+-- asset, fault, and defect facts so station codes are guaranteed to resolve.
+CREATE TABLE dim_station (
+    station_id    TEXT PRIMARY KEY,
+    station_name  TEXT NOT NULL,
+    station_order INTEGER NOT NULL,
+    station_type  TEXT NOT NULL CHECK (station_type IN ('process','inspection'))
+);
 
 CREATE TABLE dim_asset (
     asset_id        TEXT PRIMARY KEY,
     asset_class     TEXT NOT NULL CHECK (asset_class IN ('robot','conveyor')),
     line            TEXT NOT NULL,
-    station         TEXT NOT NULL,
+    station         TEXT NOT NULL REFERENCES dim_station(station_id),
     model           TEXT,
     install_age_hrs INTEGER,
     generation      INTEGER   -- starts at 1; increments when asset is replaced
@@ -38,7 +48,8 @@ CREATE TABLE dim_events (
 CREATE TABLE fact_fault_events (
     fault_id     TEXT PRIMARY KEY,
     asset_id     TEXT NOT NULL REFERENCES dim_asset(asset_id),
-    asset_class  TEXT, line TEXT, station TEXT,
+    asset_class  TEXT, line TEXT,
+    station      TEXT REFERENCES dim_station(station_id),
     fault_code   TEXT NOT NULL, fault_desc TEXT,
     shift_id     TEXT REFERENCES dim_shift_calendar(shift_id),
     crew TEXT, shift_type TEXT,
@@ -74,8 +85,8 @@ CREATE TABLE fact_defect_events (
     defect_id          TEXT PRIMARY KEY,
     ts                 TIMESTAMP NOT NULL,
     line               TEXT,
-    detected_station   TEXT NOT NULL,
-    root_cause_station TEXT NOT NULL,
+    detected_station   TEXT NOT NULL REFERENCES dim_station(station_id),
+    root_cause_station TEXT NOT NULL REFERENCES dim_station(station_id),
     crew TEXT, shift_type TEXT, defect_type TEXT
 );
 CREATE INDEX idx_defect_root ON fact_defect_events(root_cause_station);

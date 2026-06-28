@@ -26,6 +26,8 @@ DATA = os.path.join(HERE, "..", "generator", "output")
 # (table, csv filename, explicit column list mapped positionally to the CSV)
 # Only dim_shift_calendar needs a rename (start->start_ts, end->end_ts).
 LOAD_ORDER = [
+    ("dim_station", "dim_station.csv",
+     "station_id,station_name,station_order,station_type"),
     ("dim_asset", "dim_asset.csv",
      "asset_id,asset_class,line,station,model,install_age_hrs,generation"),
     ("dim_shift_calendar", "dim_shift_calendar.csv",
@@ -57,7 +59,8 @@ def main():
         cur.execute("""
             TRUNCATE shift_logs, fact_defect_events, fact_production,
                      fact_fault_events, fact_maintenance_events, dim_events,
-                     dim_shift_calendar, dim_asset RESTART IDENTITY CASCADE;
+                     dim_shift_calendar, dim_asset, dim_station
+                     RESTART IDENTITY CASCADE;
         """)
         for table, fname, cols in LOAD_ORDER:
             path = os.path.join(DATA, fname)
