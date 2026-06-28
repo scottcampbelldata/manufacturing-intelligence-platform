@@ -1,8 +1,9 @@
 "use client";
 import { Oee, OeeLine } from "@/lib/api";
-import { chart, MONO } from "@/lib/theme";
+import { MONO, type ChartPalette } from "@/lib/theme";
+import { useChartPalette } from "@/lib/useTheme";
 
-function Donut({ value }: { value: number }) {
+function Donut({ value, chart }: { value: number; chart: ChartPalette }) {
   const r = 52;
   const c = 2 * Math.PI * r;
   const off = c * (1 - value / 100);
@@ -27,7 +28,7 @@ function Donut({ value }: { value: number }) {
         textAnchor="middle"
         fontSize="30"
         fontWeight="600"
-        fill="#fff"
+        fill={chart.text}
         fontFamily={MONO}
       >
         {value.toFixed(1)}
@@ -39,12 +40,20 @@ function Donut({ value }: { value: number }) {
   );
 }
 
-function Component({ label, value }: { label: string; value: number }) {
+function Component({
+  label,
+  value,
+  chart,
+}: {
+  label: string;
+  value: number;
+  chart: ChartPalette;
+}) {
   return (
     <div>
       <div className="flex justify-between text-sm mb-1">
         <span className="text-mute">{label}</span>
-        <span className="text-white font-semibold">{value.toFixed(1)}%</span>
+        <span className="text-strong font-semibold">{value.toFixed(1)}%</span>
       </div>
       <div className="h-2 rounded-full bg-edge overflow-hidden">
         <div
@@ -60,18 +69,19 @@ function Component({ label, value }: { label: string; value: number }) {
 }
 
 export function OeePanel({ oee, byLine }: { oee: Oee; byLine: OeeLine[] }) {
+  const chart = useChartPalette();
   return (
     <div className="card">
       <div className="eyebrow mb-1">Overall Equipment Effectiveness</div>
       <div className="section-title mb-4">Plant OEE and its three loss buckets</div>
       <div className="grid md:grid-cols-[160px_1fr] gap-6 items-center">
         <div className="flex justify-center">
-          <Donut value={oee.oee_pct} />
+          <Donut value={oee.oee_pct} chart={chart} />
         </div>
         <div className="space-y-3">
-          <Component label="Availability (uptime)" value={oee.availability_pct} />
-          <Component label="Performance (speed)" value={oee.performance_pct} />
-          <Component label="Quality (first-pass)" value={oee.quality_pct} />
+          <Component label="Availability (uptime)" value={oee.availability_pct} chart={chart} />
+          <Component label="Performance (speed)" value={oee.performance_pct} chart={chart} />
+          <Component label="Quality (first-pass)" value={oee.quality_pct} chart={chart} />
           <div className="text-xs text-faint pt-1 font-mono">
             OEE = A x P x Q = {oee.availability_pct}% x {oee.performance_pct}% x{" "}
             {oee.quality_pct}% = {oee.oee_pct}%
@@ -100,7 +110,7 @@ export function OeePanel({ oee, byLine }: { oee: Oee; byLine: OeeLine[] }) {
                 <td>{l.availability_pct}%</td>
                 <td>{l.performance_pct}%</td>
                 <td>{l.quality_pct}%</td>
-                <td className="text-right font-semibold text-white">{l.oee_pct}%</td>
+                <td className="text-right font-semibold text-strong">{l.oee_pct}%</td>
               </tr>
             ))}
           </tbody>

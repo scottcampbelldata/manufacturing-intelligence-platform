@@ -20,6 +20,7 @@ import {
 } from "@/lib/api";
 import { crewGap, risingCount, top3Pct, topLoss } from "@/lib/derive";
 import { Card } from "@/components/Card";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { ReportSkeleton } from "@/components/Skeleton";
 import { KpiCards } from "@/components/KpiCards";
 import { OeePanel } from "@/components/Oee";
@@ -143,7 +144,7 @@ export default function Report() {
       <header className="flex flex-wrap items-end justify-between gap-3 pb-1">
         <div>
           <div className="eyebrow mb-1">Operations Analytics Report</div>
-          <h1 className="font-display text-3xl md:text-4xl font-semibold text-white tracking-tight">
+          <h1 className="font-display text-3xl md:text-4xl font-semibold text-strong tracking-tight">
             Automotive Assembly Intelligence
           </h1>
           <p className="text-mute text-base md:text-[1.05rem] mt-2 max-w-3xl leading-relaxed">
@@ -153,9 +154,12 @@ export default function Report() {
             priorities.
           </p>
         </div>
-        <span className="badge">
-          <span className="badge-dot" /> synthetic - seeded - no proprietary data
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="badge">
+            <span className="badge-dot" /> synthetic - seeded - no proprietary data
+          </span>
+          <ThemeToggle />
+        </div>
       </header>
 
       <KpiCards kpi={d.kpi} />

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { StationLoss, ReplaceCandidate, ValidationCheck, Provenance } from "@/lib/api";
-import { chart } from "@/lib/theme";
+import { useChartPalette } from "@/lib/useTheme";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "https://factory-api.scottcampbell.io";
 const REPO_BASE = "https://github.com/scottcampbelldata/manufacturing-intelligence-platform";
@@ -19,6 +19,7 @@ export function Takeaway({ children }: { children: React.ReactNode }) {
 }
 
 export function LossByStation({ data }: { data: StationLoss[] }) {
+  const chart = useChartPalette();
   const max = Math.max(...data.map((d) => d.loss_index), 1);
 
   return (
@@ -26,7 +27,7 @@ export function LossByStation({ data }: { data: StationLoss[] }) {
       {data.map((d, i) => (
         <div key={d.station}>
           <div className="flex justify-between text-sm mb-1">
-            <span className="text-white">
+            <span className="text-strong">
               <span className="text-faint font-mono mr-2">{i + 1}</span>
               {d.station_name}
             </span>
