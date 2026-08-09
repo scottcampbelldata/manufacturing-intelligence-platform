@@ -3,72 +3,68 @@
 @tailwind utilities;
 
 /* =====================================================================
-   Tokens — instrument-cluster / plant control-room identity.
-   STEEL for baseline data, AMBER (accent) for the insight, GOOD/DANGER
-   reserved for pass-fail and heat. Single source of truth; Tailwind colors
-   reference these variables.
+   Tokens for an instrument cluster and plant control room identity.
+   Steel blue carries structure and data. Good and danger remain reserved
+   for real operating status. Tailwind colors reference these variables.
 
-   Two grounds, one language:
-   - Light (default) — "engineering paper": warm drafting-paper ground,
-     graphite ink, steel-blue data, amber insight. Reads like a spec sheet.
-   - Dark — the original graphite control-room ground (data-theme="dark").
-   Theme-dependent literals (shadows, surface sheen, overhead glow, hover,
-   backdrop) are variables too, so both grounds stay coherent.
+   The light theme uses a cool technical canvas and the dark theme uses a
+   graphite control room ground. Theme-dependent literals keep both modes
+   coherent.
    ===================================================================== */
 :root {
   color-scheme: light;
-  --bg: #f6f4ef; /* warm drafting paper */
-  --panel: #ffffff;
-  --panel-2: #f1ede5;
-  --edge: #dad4c8;
-  --edge-soft: #e7e2d8;
-  --ink: #1a1f26; /* graphite — primary text */
-  --text: #1a1f26;
-  --strong: #11151b; /* headings / readouts — maximum contrast */
-  --mute: #50586a;
-  --faint: #6b7280;
-  --steel: #4e6e94; /* baseline data */
-  --accent: #c77d1a; /* amber — the insight / attention (darkened for paper) */
-  --accent-soft: #e0a23f;
-  --good: #2f8f66;
-  --danger: #c23b33;
-  --blue: #4e6e94; /* legacy alias -> steel */
+  --bg: #eff1f2;
+  --panel: #fcfdfd;
+  --panel-2: #e6eaec;
+  --edge: #cbd3d7;
+  --edge-soft: #dee3e6;
+  --ink: #182329;
+  --text: #182329;
+  --strong: #10181c;
+  --mute: #4f6068;
+  --faint: #738087;
+  --steel: #657782;
+  --accent: #405a6b;
+  --accent-soft: #718b9b;
+  --good: #2f7a5b;
+  --danger: #a43d39;
+  --blue: #405a6b;
 
   /* theme-dependent surface treatment */
-  --glow: #ffffff; /* soft overhead light on the paper */
+  --glow: #ffffff;
   --sheen: rgba(255, 255, 255, 0); /* white cards need no top sheen */
   --shadow-card: 0 1px 2px rgba(26, 31, 38, 0.05),
     0 16px 30px -22px rgba(26, 31, 38, 0.3);
   --shadow-modal: 0 28px 70px -20px rgba(26, 31, 38, 0.3);
-  --hover: #f3efe7;
+  --hover: #e8ecee;
   --backdrop: rgba(34, 38, 46, 0.35);
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg: #0c0f14;
-  --panel: #141922;
-  --panel-2: #1a2029;
-  --edge: #2a323d;
-  --edge-soft: #20272f;
-  --ink: #eaeef4;
-  --text: #eaeef4;
+  --bg: #11171a;
+  --panel: #182126;
+  --panel-2: #202a30;
+  --edge: #314049;
+  --edge-soft: #27343b;
+  --ink: #eaf0f2;
+  --text: #eaf0f2;
   --strong: #ffffff;
-  --mute: #98a4b3;
-  --faint: #67727f;
-  --steel: #6f8aab;
-  --accent: #f2a93b;
-  --accent-soft: #f7c476;
-  --good: #4fb286;
-  --danger: #e5544b;
-  --blue: #6f8aab;
+  --mute: #a2b0b6;
+  --faint: #73838a;
+  --steel: #78919e;
+  --accent: #9bb6c5;
+  --accent-soft: #c0d0d8;
+  --good: #6fbe92;
+  --danger: #e2847e;
+  --blue: #9bb6c5;
 
   --glow: #171d27;
   --sheen: rgba(255, 255, 255, 0.025);
   --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.025) inset,
     0 14px 32px -20px rgba(0, 0, 0, 0.8);
   --shadow-modal: 0 24px 70px rgba(0, 0, 0, 0.6);
-  --hover: #1f2630;
+  --hover: #26333a;
   --backdrop: rgba(4, 6, 10, 0.8);
 }
 
