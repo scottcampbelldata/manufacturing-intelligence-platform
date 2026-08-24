@@ -116,7 +116,16 @@ export default function Report() {
 
   if (err) {
     return (
-      <main className="max-w-6xl mx-auto p-8">
+      <main className="max-w-6xl mx-auto p-6 md:p-8 space-y-7">
+        <header className="flex flex-wrap items-end justify-between gap-3 pb-1">
+          <div>
+            <div className="eyebrow mb-1">Operations Analytics Report</div>
+            <h1 className="font-display text-3xl md:text-4xl font-semibold text-strong tracking-tight">
+              Automotive Assembly Intelligence
+            </h1>
+          </div>
+          <ThemeToggle />
+        </header>
         <Card eyebrow="Connection error" title="Couldn't load the report">
           <p className="text-mute text-sm leading-relaxed">
             The dashboard could not reach the analytics API. This is usually

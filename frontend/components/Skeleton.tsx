@@ -1,8 +1,10 @@
+import { ThemeToggle } from "@/components/ThemeToggle";
+
 // Lightweight loading placeholders shown while the report data is in flight.
 export function SkeletonBar({ className = "" }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse rounded bg-edge/60 ${className}`}
+      className={`animate-pulse rounded bg-mute/25 ${className}`}
       aria-hidden="true"
     />
   );
@@ -15,11 +17,16 @@ export function ReportSkeleton() {
       aria-busy="true"
       aria-label="Loading report"
     >
-      <div className="space-y-3">
-        <SkeletonBar className="h-3 w-40" />
-        <SkeletonBar className="h-8 w-2/3" />
-        <SkeletonBar className="h-4 w-full max-w-3xl" />
-      </div>
+      <header className="flex flex-wrap items-end justify-between gap-3 pb-1">
+        <div>
+          <div className="eyebrow mb-1">Operations Analytics Report</div>
+          <h1 className="font-display text-3xl md:text-4xl font-semibold text-strong tracking-tight">
+            Automotive Assembly Intelligence
+          </h1>
+          <p className="text-mute text-sm mt-2">Loading report</p>
+        </div>
+        <ThemeToggle />
+      </header>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <SkeletonBar key={i} className="h-24" />
