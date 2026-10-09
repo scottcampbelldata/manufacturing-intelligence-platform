@@ -108,7 +108,7 @@ generator -> CSVs -> PostgreSQL -> analytical views -> FastAPI -> Next.js report
 ```text
 generator/   Seeded Python generator (CLI) for a 3-year synthetic factory dataset
 db/          Star schema (dim_station + facts), analytical views, COPY loader
-backend/     FastAPI service: typed endpoints, TTL cache, honest health checks
+backend/     FastAPI service: typed endpoints, TTL cache, liveness/readiness checks
 frontend/    Next.js + Recharts report, with Vitest unit/render tests
 deploy/      systemd unit, nginx config, VPS runbook, and DB reset helper
 docs/        screenshots, schema documentation, and reviewer-oriented proof
@@ -326,7 +326,7 @@ tests/test_validation_endpoint.py        db:   integrity checks pass, real view 
 The integration tier regenerates the dataset, loads PostgreSQL, applies the
 analytical views, and verifies deterministic counts, referential integrity
 (including the new `dim_station` foreign keys), value bounds, typed API
-responses, honest health behavior, Cache-Control headers, and that
+responses, health check behavior, Cache-Control headers, and that
 `/api/methodology/validation` reports PASS.
 
 GitHub Actions runs three jobs on every push and pull request: **unit** (ruff

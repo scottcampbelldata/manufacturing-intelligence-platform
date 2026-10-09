@@ -1,4 +1,4 @@
-# Automotive Assembly Intelligence — task runner.
+# Automotive Assembly Intelligence - task runner.
 # Override the DB target with: make load DATABASE_URL=postgresql://...
 DATABASE_URL ?= postgresql://postgres:postgres@localhost:5432/manufacturing
 export DATABASE_URL

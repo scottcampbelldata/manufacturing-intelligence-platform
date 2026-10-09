@@ -35,7 +35,7 @@ export function useTheme(): { theme: Theme; toggle: () => void } {
     try {
       localStorage.setItem(STORAGE_KEY, next);
     } catch {
-      // private mode / storage disabled — the in-page toggle still works.
+      // private mode / storage disabled - the in-page toggle still works.
     }
   };
 

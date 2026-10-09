@@ -71,7 +71,7 @@ the fact tables, each matching the ground-truth log:
 Per-robot fault counts with a 2024-to-2025 trend flag produce a replace-or-overhaul
 shortlist; several top contributors show a *rising* fault rate
 (`v_robot_candidates`). Thermal faults track summer severity (2025 the worst heat
-year), separating a seasonal pattern from a genuine regression (`v_summer_thermal`).
+year), separating a seasonal pattern from a real regression (`v_summer_thermal`).
 
 > **Decision:** schedule the rising-trend robots for overhaul before next year.
 

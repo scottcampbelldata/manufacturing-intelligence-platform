@@ -1,12 +1,12 @@
-// Chart palette — the single source of truth for data-viz colors, kept in sync
+// Chart palette - the single source of truth for data-viz colors, kept in sync
 // with the CSS tokens in globals.css.
 //
 // Data language: STEEL is neutral/baseline data; SIGNAL (amber) marks the one
-// thing the chart is actually saying — the worst crew, the top origin stations,
+// thing the chart is actually saying - the worst crew, the top origin stations,
 // an operational event. GOOD/DANGER are reserved for pass/fail and heat.
 //
 // Recharts sets `fill`/`stroke` as SVG presentation attributes, which do NOT
-// resolve CSS var() — so chart colors must be literal hex chosen per theme.
+// resolve CSS var() - so chart colors must be literal hex chosen per theme.
 // Components pick the right palette at render via useChartPalette() and repaint
 // on toggle.
 export type Theme = "light" | "dark";
@@ -30,7 +30,7 @@ export interface ChartPalette {
   tooltipShadow: string;
 }
 
-// Dark — the original graphite control-room ground.
+// Dark - the original graphite control-room ground.
 export const chartDark: ChartPalette = {
   ink: "#11171A",
   panel: "#182126",
@@ -50,7 +50,7 @@ export const chartDark: ChartPalette = {
   tooltipShadow: "0 12px 30px -12px rgba(0,0,0,0.8)",
 };
 
-// Light — "engineering paper": steel-blue data and a darkened amber so both
+// Light - "engineering paper": steel-blue data and a darkened amber so both
 // read against a white card. Lines and dots use graphite ink.
 export const chartLight: ChartPalette = {
   ink: "#182329",

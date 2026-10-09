@@ -1,4 +1,4 @@
-# Local PostgreSQL for development — mirrors the CI `postgres:16` service.
+# Local PostgreSQL for development - mirrors the CI `postgres:16` service.
 # Usage:
 #   docker compose up -d
 #   export DATABASE_URL=postgresql://postgres:postgres@localhost:5432/manufacturing

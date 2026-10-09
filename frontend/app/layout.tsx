@@ -18,7 +18,7 @@ const body = Inter({
   display: "swap",
 });
 
-// Data: monospaced numerals for every figure — the instrument-readout signature.
+// Data: monospaced numerals for every figure - the instrument-readout signature.
 const mono = IBM_Plex_Mono({
   subsets: ["latin"],
   weight: ["400", "500", "600"],

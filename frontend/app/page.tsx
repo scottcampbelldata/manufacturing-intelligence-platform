@@ -254,7 +254,7 @@ export default function Report() {
           <SummerSeverityChart data={d.summer} />
           <Takeaway>
             Thermal faults track summer severity, with 2025 the worst heat year.
-            This separates a recurring seasonal pattern from a genuine
+            This separates a recurring seasonal pattern from a real
             reliability regression, which matters when judging whether a bad
             month is a trend.
           </Takeaway>

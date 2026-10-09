@@ -74,7 +74,7 @@
 }
 
 body {
-  /* A single soft overhead light over the ground — no blue cast. */
+  /* A single soft overhead light over the ground - no blue cast. */
   background:
     radial-gradient(1200px 620px at 50% -12%, var(--glow) 0%, transparent 62%),
     var(--bg);
@@ -110,7 +110,7 @@ table.data tr + tr td {
   }
 }
 
-/* Mono numerals everywhere figures appear — the instrument-readout signature. */
+/* Mono numerals everywhere figures appear - the instrument-readout signature. */
 .tnum {
   font-family: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
   font-variant-numeric: tabular-nums;
@@ -157,7 +157,7 @@ h1,
   line-height: 1.45;
 }
 
-/* KPI tile — reads like a gauge readout */
+/* KPI tile - reads like a gauge readout */
 .kpi {
   position: relative;
   overflow: hidden;
@@ -361,7 +361,7 @@ table.data tr + tr td { border-top: 1px solid var(--edge-soft); }
   border-color: var(--accent);
 }
 
-/* Theme toggle — a small instrument switch in the header. */
+/* Theme toggle - a small instrument switch in the header. */
 .theme-toggle {
   display: inline-flex;
   align-items: center;

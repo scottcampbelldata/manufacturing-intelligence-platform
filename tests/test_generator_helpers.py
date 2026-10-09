@@ -1,6 +1,6 @@
 """Fast unit tests for the generator's pure helper functions.
 
-These need no database and no generated CSVs — they exercise the deterministic
+These need no database and no generated CSVs - they exercise the deterministic
 seasonal/event math and the station dimension directly, so they run in the
 fast CI job.
 """
