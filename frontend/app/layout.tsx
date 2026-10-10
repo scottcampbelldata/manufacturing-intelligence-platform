@@ -27,9 +27,57 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Automotive Assembly Intelligence",
+  metadataBase: new URL("https://factory.scottcampbell.io"),
+  title: "Automotive Assembly Operations Dashboard | Manufacturing Intelligence Platform",
   description:
-    "Operations analytics over a 3-year synthetic automotive final-assembly dataset.",
+    "Automotive assembly operations dashboard over 35M rows of synthetic final assembly data: OEE, first pass yield, defects, equipment faults and replacement priorities from a star schema warehouse.",
+  applicationName: "Automotive Assembly Intelligence",
+  authors: [{ name: "Scott Campbell", url: "https://scottcampbell.io/" }],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: "Automotive Assembly Intelligence",
+    title: "Automotive Assembly Operations Dashboard | Manufacturing Intelligence Platform",
+    description: "Automotive assembly operations dashboard over 35M rows of synthetic final assembly data: OEE, first pass yield, defects, equipment faults and replacement priorities from a star schema warehouse.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Automotive Assembly Intelligence dashboard showing OEE, yield and defect metrics" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Automotive Assembly Operations Dashboard | Manufacturing Intelligence Platform",
+    description: "Automotive assembly operations dashboard over 35M rows of synthetic final assembly data: OEE, first pass yield, defects, equipment faults and replacement priorities from a star schema warehouse.",
+    images: ["/og-image.png"],
+  },
+};
+
+// Structured data for search engines.
+const JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Automotive Assembly Intelligence",
+  "url": "https://factory.scottcampbell.io/",
+  "description": "Automotive assembly operations dashboard over 35M rows of synthetic final assembly data: OEE, first pass yield, defects, equipment faults and replacement priorities from a star schema warehouse.",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Any (web browser)",
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "Scott Campbell",
+    "url": "https://scottcampbell.io/"
+  },
+  "subjectOf": {
+    "@type": "CreativeWork",
+    "name": "Automotive Assembly Intelligence case study",
+    "url": "https://scottcampbell.io/projects/manufacturing-intelligence-platform/"
+  },
+  "sameAs": [
+    "https://github.com/scottcampbelldata/manufacturing-intelligence-platform"
+  ]
 };
 
 // Set the theme before first paint so there is no light/dark flash. Default is
@@ -50,6 +98,7 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }} />
       </head>
       <body className="font-sans antialiased">{children}</body>
     </html>
