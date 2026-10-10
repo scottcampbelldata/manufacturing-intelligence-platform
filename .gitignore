@@ -31,3 +31,6 @@ Thumbs.db
 .vscode/
 
 redesign-*.png
+
+# Local files
+*.log

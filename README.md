@@ -1,5 +1,9 @@
 # Automotive Assembly Intelligence Platform
 
+**An analytics dashboard for a simulated automotive assembly plant, built on PostgreSQL, FastAPI and Next.js.**
+
+Live at [factory.scottcampbell.io](https://factory.scottcampbell.io). More of my work is at [scottcampbell.io](https://scottcampbell.io).
+
 A production-style manufacturing analytics platform for an automotive final-assembly plant.
 
 This project combines a domain-realistic synthetic dataset, a PostgreSQL star schema, analytical SQL views, a FastAPI backend, and a live Next.js executive dashboard. It was built to demonstrate full-stack data engineering, operational analytics, and BI delivery.
