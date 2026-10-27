@@ -22,7 +22,7 @@ import { crewGap, risingCount, top3Pct, topLoss } from "@/lib/derive";
 import { Card } from "@/components/Card";
 import { SiteBar, ConsultFooter, Fold } from "@/components/SiteFrame";
 import { ReportBand, CASE_STUDY, REPO } from "@/components/ReportBand";
-import { ReportSkeleton } from "@/components/Skeleton";
+import { ReportSkeletonMain } from "@/components/Skeleton";
 import { KpiCards } from "@/components/KpiCards";
 import { OeePanel } from "@/components/Oee";
 import {
@@ -137,7 +137,13 @@ export default function Report() {
   }
 
   if (!d) {
-    return <ReportSkeleton />;
+    return (
+      <>
+        <SiteBar caseStudy={CASE_STUDY} repo={REPO} />
+        <ReportBand />
+        <ReportSkeletonMain />
+      </>
+    );
   }
 
   const gap = crewGap(d.mttr);

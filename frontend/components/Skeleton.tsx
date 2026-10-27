@@ -11,11 +11,9 @@ export function SkeletonBar({ className = "" }: { className?: string }) {
   );
 }
 
-export function ReportSkeleton() {
+// Only the body changes while loading, so the title band keeps its node and paints once.
+export function ReportSkeletonMain() {
   return (
-    <>
-      <SiteBar caseStudy={CASE_STUDY} repo={REPO} />
-      <ReportBand />
       <main
         className="max-w-[1120px] mx-auto px-6 pt-10 space-y-10"
         aria-busy="true"
@@ -33,6 +31,15 @@ export function ReportSkeleton() {
           <SkeletonBar className="h-64" />
         </div>
       </main>
+  );
+}
+
+export function ReportSkeleton() {
+  return (
+    <>
+      <SiteBar caseStudy={CASE_STUDY} repo={REPO} />
+      <ReportBand />
+      <ReportSkeletonMain />
     </>
   );
 }
