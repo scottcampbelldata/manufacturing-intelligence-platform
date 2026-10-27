@@ -20,7 +20,8 @@ import {
 } from "@/lib/api";
 import { crewGap, risingCount, top3Pct, topLoss } from "@/lib/derive";
 import { Card } from "@/components/Card";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { SiteBar, ConsultFooter, Fold } from "@/components/SiteFrame";
+import { ReportBand, CASE_STUDY, REPO } from "@/components/ReportBand";
 import { ReportSkeleton } from "@/components/Skeleton";
 import { KpiCards } from "@/components/KpiCards";
 import { OeePanel } from "@/components/Oee";
@@ -116,26 +117,22 @@ export default function Report() {
 
   if (err) {
     return (
-      <main className="max-w-6xl mx-auto p-6 md:p-8 space-y-7">
-        <header className="flex flex-wrap items-end justify-between gap-3 pb-1">
-          <div>
-            <div className="eyebrow mb-1">Operations Analytics Report</div>
-            <h1 className="font-display text-3xl md:text-4xl font-semibold text-strong tracking-tight">
-              Automotive Assembly Intelligence
-            </h1>
-          </div>
-          <ThemeToggle />
-        </header>
+      <>
+      <SiteBar caseStudy={CASE_STUDY} repo={REPO} />
+      <ReportBand />
+      <main id="main" className="max-w-[1120px] mx-auto px-6 pt-10 space-y-7">
         <Card eyebrow="Connection error" title="Couldn't load the report">
           <p className="text-mute text-sm leading-relaxed">
             The dashboard could not reach the analytics API. This is usually
-            transient -- try refreshing in a moment. If it persists, confirm the
+            transient, so try refreshing in a moment. If it persists, confirm the
             API service is running and that{" "}
             <code className="text-faint">NEXT_PUBLIC_API_BASE</code> points to it.
           </p>
           <p className="text-faint text-xs mt-3 font-mono break-all">{err}</p>
         </Card>
       </main>
+      <ConsultFooter caseStudy={CASE_STUDY} />
+      </>
     );
   }
 
@@ -149,35 +146,17 @@ export default function Report() {
   const rising = risingCount(d.candidates);
 
   return (
-    <main className="max-w-6xl mx-auto p-6 md:p-8 space-y-7">
-      <header className="flex flex-wrap items-end justify-between gap-3 pb-1">
-        <div>
-          <div className="eyebrow mb-1">Operations Analytics Report</div>
-          <h1 className="font-display text-3xl md:text-4xl font-semibold text-strong tracking-tight">
-            Automotive Assembly Intelligence
-          </h1>
-          <p className="text-mute text-base md:text-[1.05rem] mt-2 max-w-3xl leading-relaxed">
-            Three years of synthetic assembly-line data modeled through a
-            production-style analytics pipeline. The report identifies output
-            loss, quality escapes, repair gaps, trend shifts, and replacement
-            priorities.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="badge">
-            <span className="badge-dot" /> synthetic - seeded - no proprietary data
-          </span>
-          <ThemeToggle />
-        </div>
-      </header>
-
+    <>
+      <SiteBar caseStudy={CASE_STUDY} repo={REPO} />
+      <ReportBand />
+    <main id="main" className="max-w-[1120px] mx-auto px-6 pt-10 space-y-10">
       <KpiCards kpi={d.kpi} />
       <OeePanel oee={d.oee} byLine={d.oeeByLine} />
 
       <Card
-        eyebrow="Decision - fix first"
+        eyebrow="Decision: fix first"
         title="Where output is lost"
-        subtitle="Equipment downtime (hours) and scrap (units) by station, ranked. No dollar assumptions - raw operational loss."
+        subtitle="Equipment downtime (hours) and scrap (units) by station, ranked. No dollar assumptions, just raw operational loss."
       >
         <LossByStation data={d.loss} />
         <Takeaway>
@@ -192,9 +171,9 @@ export default function Report() {
 
       <section className="grid md:grid-cols-2 gap-6">
         <Card
-          eyebrow="Decision - crew support"
+          eyebrow="Decision: crew support"
           title="The invisible night shift"
-          subtitle="Mean time to repair by crew. Same equipment, same faults - the gap is repair speed."
+          subtitle="Mean time to repair by crew. Same equipment, same faults: the gap is repair speed."
         >
           <MttrByCrewChart data={d.mttr} />
           <Takeaway>
@@ -205,7 +184,7 @@ export default function Report() {
           </Takeaway>
         </Card>
         <Card
-          eyebrow="Decision - quality focus"
+          eyebrow="Decision: quality focus"
           title="Defect origin vs detection"
           subtitle={`${d.propagation.pct_detected_downstream}% of defects are caught downstream of where they were created.`}
         >
@@ -220,9 +199,9 @@ export default function Report() {
       </section>
 
       <Card
-        eyebrow="Validation - did our fixes work?"
+        eyebrow="Validation: did the fixes work?"
         title="Quality trend rediscovers real operational events"
-        subtitle="The trend layer surfaces the weld-cell retooling, supplier bad batch, and model-year launch directly from the data - no manual labels."
+        subtitle="The trend layer surfaces the weld-cell retooling, supplier bad batch, and model-year launch directly from the data, with no manual labels."
       >
         <YieldTrendChart data={d.yieldQ} />
         <Takeaway>
@@ -235,9 +214,9 @@ export default function Report() {
 
       <section className="grid md:grid-cols-2 gap-6">
         <Card
-          eyebrow="Decision - capital plan"
+          eyebrow="Decision: capital plan"
           title="Robots to budget for replacement"
-          subtitle="Fault count and year-over-year trend per robot - the replace-or-overhaul shortlist."
+          subtitle="Fault count and year-over-year trend per robot: the replace-or-overhaul shortlist."
         >
           <ReplaceCandidates data={d.candidates} />
           <Takeaway>
@@ -247,7 +226,7 @@ export default function Report() {
           </Takeaway>
         </Card>
         <Card
-          eyebrow="Context - seasonality"
+          eyebrow="Context: seasonality"
           title="No two summers alike"
           subtitle="Heat-sensitive faults (drives, servo guns, VFDs, paint bells) by summer."
         >
@@ -261,30 +240,36 @@ export default function Report() {
         </Card>
       </section>
 
-      <Card
-        eyebrow="System proof"
-        title="Built as a production-style analytics pipeline"
-        subtitle="The dashboard is the last mile of a reproducible data product: generation, schema, validation, API, deployment, and frontend are all present in the repo."
-      >
-        <ArchitectureStrip />
-        <div className="mt-5">
-          <SystemProof />
-        </div>
-      </Card>
+      <div>
+        <Fold title="System proof: built as a production-style analytics pipeline">
+          <p className="section-sub mb-4">
+            The dashboard is the last mile of a reproducible data product:
+            generation, schema, validation, API, deployment, and frontend are
+            all present in the repo.
+          </p>
+          <ArchitectureStrip />
+          <div className="mt-5">
+            <SystemProof />
+          </div>
+        </Fold>
+        <Fold title="Methodology and data validation">
+          <p className="section-sub mb-4">
+            Row counts, referential-integrity checks, reconciliation, and
+            provenance. Every figure above traces to a named SQL view over this
+            validated data.
+          </p>
+          <MethodologyPanel checks={d.validation} provenance={d.provenance} />
+        </Fold>
+      </div>
 
-      <Card
-        eyebrow="Trust - is this right?"
-        title="Methodology & data validation"
-        subtitle="Row counts, referential-integrity checks, reconciliation, and provenance. Every figure above traces to a named SQL view over this validated data."
-      >
-        <MethodologyPanel checks={d.validation} provenance={d.provenance} />
-      </Card>
-
-      <footer className="text-xs text-faint pt-4 border-t border-edge">
-        Built by Scott Campbell with FastAPI, PostgreSQL/TimescaleDB, Next.js,
-        Recharts, and nginx. Built with fully synthetic, seeded, reproducible
-        data. No proprietary or employer data used.
-      </footer>
+      <p className="text-sm text-mute italic pt-2">
+        Built with FastAPI, PostgreSQL/TimescaleDB, Next.js, Recharts, and
+        nginx, on fully synthetic, seeded, reproducible data. No proprietary or
+        employer data used.
+      </p>
     </main>
+      <ConsultFooter caseStudy={CASE_STUDY} />
+    </>
   );
 }
+

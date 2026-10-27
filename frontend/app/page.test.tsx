@@ -139,7 +139,7 @@ describe("Report page", () => {
     holdAllUnresolved();
     render(<Report />);
 
-    expect(screen.getByText("Operations Analytics Report")).toBeInTheDocument();
+    expect(screen.getByText("Operations analytics report")).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "Automotive Assembly Intelligence" })
     ).toBeInTheDocument();
@@ -161,7 +161,7 @@ describe("Report page", () => {
       screen.getByText(/Three years of synthetic assembly-line data/)
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/synthetic - seeded - no proprietary data/)
+      screen.getByText(/Synthetic, seeded, no proprietary data/)
     ).toBeInTheDocument();
   });
 

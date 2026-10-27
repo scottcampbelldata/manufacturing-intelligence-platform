@@ -9,11 +9,9 @@ const REPO_BASE = "https://github.com/scottcampbelldata/manufacturing-intelligen
 
 export function Takeaway({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mt-4 flex gap-3 rounded-lg border border-edge bg-[var(--panel-2)] p-3">
-      <div className="text-accent text-xs font-semibold uppercase tracking-wider shrink-0 pt-0.5">
-        Read
-      </div>
-      <p className="text-sm text-mute leading-relaxed">{children}</p>
+    <div className="takeaway">
+      <div className="takeaway-label">Read</div>
+      <p>{children}</p>
     </div>
   );
 }
@@ -32,10 +30,10 @@ export function LossByStation({ data }: { data: StationLoss[] }) {
               {d.station_name}
             </span>
             <span className="text-mute">
-              {d.downtime_hrs.toLocaleString()} hrs down - {d.scrap_units.toLocaleString()} scrap
+              {d.downtime_hrs.toLocaleString()} hrs down, {d.scrap_units.toLocaleString()} scrap
             </span>
           </div>
-          <div className="h-2.5 rounded-full bg-edge overflow-hidden flex">
+          <div className="h-2.5 bg-edge overflow-hidden flex">
             <div
               className="h-full"
               style={{
@@ -57,11 +55,11 @@ export function LossByStation({ data }: { data: StationLoss[] }) {
       ))}
       <div className="flex gap-4 text-xs text-faint pt-1">
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ background: chart.steel }} />
+          <span className="w-2.5 h-2.5 inline-block" style={{ background: chart.steel }} />
           downtime hours
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ background: chart.signal }} />
+          <span className="w-2.5 h-2.5 inline-block" style={{ background: chart.signal }} />
           scrap units
         </span>
       </div>
@@ -95,7 +93,7 @@ export function ReplaceCandidates({ data }: { data: ReplaceCandidate[] }) {
               <td className="text-right">{r.avg_repair_min}m</td>
               <td className="text-right">
                 <span
-                  className={`text-xs px-2 py-0.5 rounded-full ${
+                  className={`text-xs px-2 py-0.5 rounded-sm ${
                     r.trend === "rising"
                       ? "text-accent border border-accent/40"
                       : "text-mute border border-edge"
@@ -122,7 +120,7 @@ export function MethodologyPanel({
   return (
     <div className="grid md:grid-cols-2 gap-6">
       <div>
-        <div className="text-xs text-faint uppercase tracking-wider mb-3">
+        <div className="eyebrow mb-3">
           Data-integrity checks
         </div>
         <table className="data w-full">
@@ -146,7 +144,7 @@ export function MethodologyPanel({
         </table>
       </div>
       <div>
-        <div className="text-xs text-faint uppercase tracking-wider mb-3">
+        <div className="eyebrow mb-3">
           Provenance & method
         </div>
         <p className="text-sm text-mute mb-3">{provenance.source}</p>
@@ -159,7 +157,7 @@ export function MethodologyPanel({
           ))}
         </ul>
         <p className="text-xs text-faint font-mono">
-          seed = {provenance.seed} - reproducible - no proprietary data
+          seed = {provenance.seed}, reproducible, no proprietary data
         </p>
         <p className="text-xs text-faint mt-2">{provenance.oee_definition}</p>
       </div>

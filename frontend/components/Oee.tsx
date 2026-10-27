@@ -15,10 +15,9 @@ function Donut({ value, chart }: { value: number; chart: ChartPalette }) {
         cy="70"
         r={r}
         fill="none"
-        stroke={chart.good}
+        stroke={chart.signal}
         strokeWidth="14"
-        strokeLinecap="round"
-        strokeDasharray={c}
+                strokeDasharray={c}
         strokeDashoffset={off}
         transform="rotate(-90 70 70)"
       />
@@ -27,13 +26,12 @@ function Donut({ value, chart }: { value: number; chart: ChartPalette }) {
         y="66"
         textAnchor="middle"
         fontSize="30"
-        fontWeight="600"
-        fill={chart.text}
+                fill={chart.text}
         fontFamily={MONO}
       >
         {value.toFixed(1)}
       </text>
-      <text x="70" y="88" textAnchor="middle" fontSize="11" fill={chart.mute} letterSpacing="1.5">
+      <text x="70" y="88" textAnchor="middle" fontSize="11" fill={chart.mute} >
         OEE %
       </text>
     </svg>
@@ -55,12 +53,12 @@ function Component({
         <span className="text-mute">{label}</span>
         <span className="text-strong font-semibold">{value.toFixed(1)}%</span>
       </div>
-      <div className="h-2 rounded-full bg-edge overflow-hidden">
+      <div className="h-2 bg-edge overflow-hidden">
         <div
-          className="h-full rounded-full"
+          className="h-full"
           style={{
             width: `${value}%`,
-            background: `linear-gradient(90deg, ${chart.steel}, ${chart.good})`,
+            background: chart.signal,
           }}
         />
       </div>
@@ -72,8 +70,8 @@ export function OeePanel({ oee, byLine }: { oee: Oee; byLine: OeeLine[] }) {
   const chart = useChartPalette();
   return (
     <div className="card">
-      <div className="eyebrow mb-1">Overall Equipment Effectiveness</div>
-      <div className="section-title mb-4">Plant OEE and its three loss buckets</div>
+      <div className="eyebrow mb-1">Overall equipment effectiveness</div>
+      <h2 className="section-title mb-4">Plant OEE and its three loss buckets</h2>
       <div className="grid md:grid-cols-[160px_1fr] gap-6 items-center">
         <div className="flex justify-center">
           <Donut value={oee.oee_pct} chart={chart} />
@@ -90,7 +88,7 @@ export function OeePanel({ oee, byLine }: { oee: Oee; byLine: OeeLine[] }) {
       </div>
 
       <div className="mt-5 pt-4 border-t border-edge">
-        <div className="text-xs text-faint uppercase tracking-wider mb-2">
+        <div className="eyebrow mb-2">
           By line
         </div>
         <table className="data w-full">

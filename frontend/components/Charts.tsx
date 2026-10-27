@@ -31,7 +31,7 @@ function tip(c: ChartPalette, content: any) {
       contentStyle={{
         background: c.panel2,
         border: `1px solid ${c.edge}`,
-        borderRadius: 10,
+        borderRadius: 2,
         boxShadow: c.tooltipShadow,
         padding: "0.55rem 0.7rem",
       }}
@@ -52,7 +52,7 @@ export function MttrByCrewChart({ data }: { data: MttrCrew[] }) {
         <XAxis dataKey="crew" tick={axisTick(c)} />
         <YAxis tick={axisTick(c)} unit="m" />
         {tip(c, {})}
-        <Bar dataKey="mttr_min" name="MTTR (min)" radius={[6, 6, 0, 0]}>
+        <Bar dataKey="mttr_min" name="MTTR (min)" radius={[1, 1, 0, 0]}>
           {sorted.map((d) => (
             <Cell key={d.crew} fill={d.crew === "D" ? c.signal : c.steel} />
           ))}
@@ -84,7 +84,7 @@ export function DefectOriginChart({ data }: { data: RootCause[] }) {
         <YAxis yAxisId="l" tick={axisTick(c)} />
         <YAxis yAxisId="r" orientation="right" tick={axisTick(c)} unit="%" domain={[0, 100]} />
         {tip(c, {})}
-        <Bar yAxisId="l" dataKey="defects" name="defects (000s)" radius={[6, 6, 0, 0]}>
+        <Bar yAxisId="l" dataKey="defects" name="defects (000s)" radius={[1, 1, 0, 0]}>
           {rows.map((r, i) => (
             <Cell key={i} fill={r.top ? c.signal : c.steel} />
           ))}
@@ -148,7 +148,7 @@ export function SummerSeverityChart({ data }: { data: SummerThermal[] }) {
         <XAxis dataKey="yr" tick={axisTick(c)} />
         <YAxis tick={axisTick(c)} />
         {tip(c, {})}
-        <Bar dataKey="n" name="thermal faults" radius={[6, 6, 0, 0]}>
+        <Bar dataKey="n" name="thermal faults" radius={[1, 1, 0, 0]}>
           {rows.map((_, i) => (
             <Cell key={i} fill={palette[i % palette.length]} />
           ))}

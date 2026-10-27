@@ -1,30 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Inter, Saira } from "next/font/google";
 import "./globals.css";
-
-// Display: an industrial grotesque for headings (instrument-panel energy).
-const display = Saira({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-display",
-  display: "swap",
-});
-
-// Body: clean and legible.
-const body = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-sans",
-  display: "swap",
-});
-
-// Data: monospaced numerals for every figure - the instrument-readout signature.
-const mono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-mono",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://factory.scottcampbell.io"),
@@ -94,13 +69,14 @@ export default function RootLayout({
       lang="en"
       data-theme="light"
       suppressHydrationWarning
-      className={`${display.variable} ${body.variable} ${mono.variable}`}
     >
       <head>
+        <link rel="preload" href="/fonts/source-serif-4-text.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/libertinus-serif-display-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }} />
       </head>
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans">{children}</body>
     </html>
   );
 }

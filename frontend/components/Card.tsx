@@ -16,7 +16,7 @@ export function Card({
       {(eyebrow || title || subtitle) && (
         <div className="mb-4">
           {eyebrow && <div className="eyebrow mb-1.5">{eyebrow}</div>}
-          {title && <div className="section-title">{title}</div>}
+          {title && <h2 className="section-title">{title}</h2>}
           {subtitle && <div className="section-sub">{subtitle}</div>}
         </div>
       )}

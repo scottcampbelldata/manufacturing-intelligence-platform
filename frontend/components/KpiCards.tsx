@@ -19,7 +19,7 @@ export function KpiCards({ kpi }: { kpi: Kpi }) {
     },
   ];
   return (
-    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+    <div className="kpi-row grid grid-cols-2 md:grid-cols-5 gap-x-6">
       {cards.map((c) => (
         <div key={c.label} className="kpi">
           <div className="kpi-value">{c.value}</div>

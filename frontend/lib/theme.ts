@@ -1,7 +1,7 @@
 // Chart palette - the single source of truth for data-viz colors, kept in sync
 // with the CSS tokens in globals.css.
 //
-// Data language: STEEL is neutral/baseline data; SIGNAL (amber) marks the one
+// Data language: STEEL is neutral/baseline data; SIGNAL (the slate accent) marks the one
 // thing the chart is actually saying - the worst crew, the top origin stations,
 // an operational event. GOOD/DANGER are reserved for pass/fail and heat.
 //
@@ -30,45 +30,45 @@ export interface ChartPalette {
   tooltipShadow: string;
 }
 
-// Dark - the original graphite control-room ground.
+// Dark - the scottcampbell.io dark paper.
 export const chartDark: ChartPalette = {
-  ink: "#11171A",
-  panel: "#182126",
-  panel2: "#202A30",
-  edge: "#314049",
-  grid: "#27343B",
-  text: "#EAF0F2",
-  mute: "#A2B0B6",
-  faint: "#73838A",
-  steel: "#78919E",
-  steelSoft: "#9BB6C5",
-  signal: "#D4A15D",
-  signalSoft: "#E4C58F",
-  good: "#6FBE92",
-  danger: "#E2847E",
-  cursor: "rgba(155,182,197,0.10)",
-  tooltipShadow: "0 12px 30px -12px rgba(0,0,0,0.8)",
+  ink: "#13191B",
+  panel: "#182023",
+  panel2: "#1A2326",
+  edge: "#2B3539",
+  grid: "#242D31",
+  text: "#E6ECEE",
+  mute: "#A6B4B9",
+  faint: "#8E9DA3",
+  steel: "#5F7F8A",
+  steelSoft: "#86A3AD",
+  signal: "#8CC1D6",
+  signalSoft: "#B1D6E4",
+  good: "#7CC29C",
+  danger: "#E28D85",
+  cursor: "rgba(140,193,214,0.10)",
+  tooltipShadow: "none",
 };
 
-// Light - "engineering paper": steel-blue data and a darkened amber so both
-// read against a white card. Lines and dots use graphite ink.
+// Light - the scottcampbell.io preprint palette: slate accent marks the one
+// thing the chart is saying, a grey blue carries the baseline.
 export const chartLight: ChartPalette = {
-  ink: "#182329",
-  panel: "#FCFDFD",
-  panel2: "#E6EAEC",
-  edge: "#CBD3D7",
-  grid: "#DEE3E6",
-  text: "#182329",
-  mute: "#4F6068",
-  faint: "#738087",
-  steel: "#657782",
-  steelSoft: "#8798A2",
-  signal: "#A66413",
-  signalSoft: "#C58B45",
-  good: "#2F7A5B",
-  danger: "#A43D39",
-  cursor: "rgba(64,90,107,0.06)",
-  tooltipShadow: "0 12px 30px -16px rgba(26,31,38,0.30)",
+  ink: "#1B2A30",
+  panel: "#FFFFFF",
+  panel2: "#EEF3F4",
+  edge: "#D9DFE0",
+  grid: "#E6EAEB",
+  text: "#1B2A30",
+  mute: "#4D5D63",
+  faint: "#5F6E74",
+  steel: "#9FB6BE",
+  steelSoft: "#B9CCD2",
+  signal: "#28566B",
+  signalSoft: "#7F9EA9",
+  good: "#2F6B4F",
+  danger: "#8E2B22",
+  cursor: "rgba(40,86,107,0.06)",
+  tooltipShadow: "none",
 };
 
 export function getChart(theme: Theme): ChartPalette {
