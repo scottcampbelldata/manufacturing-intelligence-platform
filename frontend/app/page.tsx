@@ -262,7 +262,7 @@ export default function Report() {
         </Fold>
       </div>
 
-      <p className="text-sm text-mute italic pt-2">
+      <p className="text-base text-mute italic pt-2">
         Built with FastAPI, PostgreSQL/TimescaleDB, Next.js, Recharts, and
         nginx, on fully synthetic, seeded, reproducible data. No proprietary or
         employer data used.

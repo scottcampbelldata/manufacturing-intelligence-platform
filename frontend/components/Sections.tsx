@@ -147,8 +147,8 @@ export function MethodologyPanel({
         <div className="eyebrow mb-3">
           Provenance & method
         </div>
-        <p className="text-sm text-mute mb-3">{provenance.source}</p>
-        <ul className="text-sm text-mute space-y-1.5 mb-3">
+        <p className="text-base text-mute mb-3">{provenance.source}</p>
+        <ul className="text-base text-mute space-y-1.5 mb-3">
           {provenance.modeling.map((m, i) => (
             <li key={i} className="flex gap-2">
               <span className="text-accent">-</span>
@@ -156,10 +156,10 @@ export function MethodologyPanel({
             </li>
           ))}
         </ul>
-        <p className="text-xs text-faint font-mono">
+        <p className="text-sm text-faint font-mono">
           seed = {provenance.seed}, reproducible, no proprietary data
         </p>
-        <p className="text-xs text-faint mt-2">{provenance.oee_definition}</p>
+        <p className="text-sm text-faint mt-2">{provenance.oee_definition}</p>
       </div>
     </div>
   );
